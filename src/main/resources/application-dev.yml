@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+#数据库配置参数
+spring:
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:D:/dev/sqllite/databases/weiqiaoshiyan.db
+    password:
+    username:
+#mybatis开启驼峰命名映射
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+logging:
+  level:
+    com.weiqiaoshiyan.student.manager.mapper: debug
