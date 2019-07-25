@@ -5,13 +5,19 @@ server:
 spring:
   datasource:
     driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:D:/dev/sqllite/databases/weiqiaoshiyan.db
+    url: jdbc:sqlite:D:\sqlite3Database\main.db
     password:
     username:
+  messages:
+    basename: i18n.login
+  thymeleaf:
+    cache: false
 #mybatis开启驼峰命名映射
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+  type-aliases-package: com.weiqiaoshiyan.student.manager.entity
+
 logging:
   level:
     com.weiqiaoshiyan.student.manager.mapper: debug
