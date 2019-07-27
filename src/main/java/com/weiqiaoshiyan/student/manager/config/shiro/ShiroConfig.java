@@ -1,8 +1,10 @@
 package com.weiqiaoshiyan.student.manager.config.shiro;
 
+import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,6 +15,12 @@ import java.util.LinkedHashMap;
  */
 @Configuration
 public class ShiroConfig {
+
+    @Value(value = "${mysharo.hashAlgorithmName}")
+    private  String hashAlgorithmName;
+    @Value(value = "${mysharo.hashIterations}")
+    private Integer hashIterations;
+
     /*创建ShiroFilterFactoryBean*/
     @Bean
     public ShiroFilterFactoryBean shiroFilterFactoryBean(@Qualifier("defaultWebSecurityManager")DefaultWebSecurityManager defaultWebSecurityManager) {
@@ -59,6 +67,14 @@ public class ShiroConfig {
      */
     @Bean(value = "userRealm")
     public UserRealm userRealm(){
-        return new UserRealm();
+        UserRealm userRealm = new UserRealm();
+        /**
+         * 设置认证算法为MD5算法
+         */
+        HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
+        hashedCredentialsMatcher.setHashAlgorithmName(hashAlgorithmName);
+        hashedCredentialsMatcher.setHashIterations(hashIterations);
+        userRealm.setCredentialsMatcher(hashedCredentialsMatcher);
+        return userRealm;
     }
 }

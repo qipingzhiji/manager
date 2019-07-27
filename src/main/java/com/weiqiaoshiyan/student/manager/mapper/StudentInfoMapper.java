@@ -15,7 +15,7 @@ import java.util.Map;
 @Repository
 public interface StudentInfoMapper {
 
-    @Insert("insert into student_info(student_number,student_name,password,class_id,create_time,sex) values(#{studentNumber},#{studentName},#{password},#{classId},#{createTime},#{sex})")
+    @Insert("insert into student_info(student_number,student_name,password,class_id,create_time,sex,salt) values(#{studentNumber},#{studentName},#{password},#{classId},'datetime()',#{sex},#{salt})")
     int insert(StudentInfo studentInfo);
     @Delete("<script>" +
             "delte from student_info where id in" +
@@ -79,6 +79,9 @@ public interface StudentInfoMapper {
             "</if>" +
             "<if test='classId !=null'>" +
             "and class_id = #{classId}" +
+            "</if>" +
+            "<if test='sex !=null'>" +
+            "and sex = #{sex}" +
             "</if>" +
             "</otherwise>" +
             "</choose>" +

@@ -6,6 +6,7 @@ import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
@@ -49,6 +50,7 @@ public class UserRealm extends AuthorizingRealm {
         if(studentInfos.size() ==0 ){
             return null;
         }
-        return new SimpleAuthenticationInfo(studentInfos.get(0),studentInfos.get(0).getPassword(),getName());
+        ByteSource byteSource = ByteSource.Util.bytes(studentInfos.get(0).getSalt());
+        return new SimpleAuthenticationInfo(studentInfos.get(0),studentInfos.get(0).getPassword(),byteSource,getName());
     }
 }

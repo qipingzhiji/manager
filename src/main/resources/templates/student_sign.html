@@ -219,6 +219,9 @@
                             $(".popover-show").popover("hide");
                         },1000);
                         $('#student_detail_info').DataTable().ajax.reload();
+                    }else {
+                        this.signedStatus = "近期已经签到,无须再次签到";
+                        this.isButtonDisabled = true;
                     }
                 },function (res) {
 

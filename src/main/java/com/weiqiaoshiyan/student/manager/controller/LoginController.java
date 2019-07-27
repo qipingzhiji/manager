@@ -7,6 +7,7 @@ import com.weiqiaoshiyan.student.manager.entity.StudentInfo;
 import com.weiqiaoshiyan.student.manager.mapper.StudentMapper;
 import com.weiqiaoshiyan.student.manager.service.CourseService;
 import com.weiqiaoshiyan.student.manager.service.StudentInfoService;
+import org.apache.commons.beanutils.converters.DateTimeConverter;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
@@ -14,10 +15,13 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.sqlite.date.DateFormatUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -64,14 +68,23 @@ public class LoginController {
     }
 
     @RequestMapping("/student/login")
-    public Object studentLogin(@RequestParam Map<String, Object> conditions, RedirectAttributes redirectAttributes, Model model) {
-        Map<String, String> errorMap = service.studentLogin(conditions);
-        if (errorMap.get("errorPage") != null) {
-            model.addAllAttributes(errorMap);
-            return errorMap.get("errorPage");
+    public Object studentLogin(@RequestParam Map<String, Object> conditions, @ModelAttribute("loginStudent") String updateLoginStudentInfo,@ModelAttribute("updateStatus") String updateStatus, RedirectAttributes redirectAttributes, Model model) {
+
+
+        String json ="";
+        if(StringUtils.isEmpty(updateLoginStudentInfo)){
+            Map<String, String> errorMap = service.studentLogin(conditions);
+            if (errorMap.get("errorPage") != null) {
+                model.addAllAttributes(errorMap);
+                return errorMap.get("errorPage");
+            }
+            StudentInfo studentInfo = (StudentInfo) SecurityUtils.getSubject().getPrincipal();
+            json = JSONObject.toJSONString(studentInfo);
+        }else{
+            json =updateLoginStudentInfo;
+            redirectAttributes.addAttribute("updateStatus",updateStatus);
         }
-        StudentInfo studentInfo = (StudentInfo) SecurityUtils.getSubject().getPrincipal();
-        String json = JSONObject.toJSONString(studentInfo);
+
         redirectAttributes.addAttribute("loginStudent",json );
 
         return "redirect:/student/student_sign";
@@ -82,11 +95,10 @@ public class LoginController {
     public Object signed( Student student){
         Map<String,Object> message = new HashMap<>();
         Date now = new Date();
-        student.setBeginTime(now);
         String format = DateFormatUtils.format(now, "yyyy-MM-dd");
+        student.setBeginTime(now);
         Map<String,Object> conditions = new HashMap<>();
         conditions.put("studentId",student.getStudentId());
-        conditions.put("beginTime",format);
         List<Student> students = studentLessonService.selectByCondition(conditions);
         if(students.size() > 0) {
             conditions.clear();
@@ -95,13 +107,22 @@ public class LoginController {
             List<Course> courses = courseService.selectCourseInfo(conditions);
             Date beginTime = students.get(0).getBeginTime();
             Integer courseTime = courses.get(0).getCourseTime();
-            if(now.getTime()-beginTime.getTime()>courseTime){
-                message.put("success","签到成功");
+            if((now.getTime()-beginTime.getTime())/1000/60  >courseTime){
+                if(studentLessonService.insert(student) > 0){
+
+                    message.put("success","签到成功");
+                    return  true;
+                }else{
+                    message.put("failed","签到失败");
+                    return  false;
+                }
             } else {
                 message.put("failed","在授课时间[" + courseTime+"]内已经签过到，不用继续签到");
+                return  false;
             }
+        } else{
+            return studentLessonService.insert(student) > 0;
         }
-        return studentLessonService.insert(student) > 0;
     }
 
     @RequestMapping("/student/updateInfo")
@@ -109,8 +130,9 @@ public class LoginController {
         if("".equals(studentInfo.getPassword())){
             studentInfo.setPassword(null);
         }
-        StudentInfo studentInfoOne = service.getStudentInfoById(studentInfo.getId());
+        StudentInfo studentInfoOne = null;
         if(service.updateStudentInfo(studentInfo)){
+            studentInfoOne = service.getStudentInfoById(studentInfo.getId());
             //更新shiro认证的信息
             Subject subject = SecurityUtils.getSubject();
             PrincipalCollection previousPrincipals = subject.getPreviousPrincipals();
@@ -126,10 +148,15 @@ public class LoginController {
         }else{
             redirectAttributes.addAttribute("updateStatus","学生信息更新失败");
         }
+        if(!StringUtils.isEmpty(studentInfo.getPassword())) {
+            model.addAttribute("updateStatus","你的密码已经更改，请重新登录");
+            return  "login";
+        }
         Object principal = SecurityUtils.getSubject().getPrincipal();
         String json = JSONObject.toJSONString(studentInfoOne);
         redirectAttributes.addAttribute("loginStudent",json );
-        return "redirect:/student/student_sign";
+
+        return "redirect:/student/login";
     }
 
 }

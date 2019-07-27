@@ -23,6 +23,7 @@
         <span th:text="${failed}" th:if="${not #strings.isEmpty(failed)}"></span>
         <p  th:text="${accountError}" th:if="${not#strings.isEmpty(accountError)}" ></p>
         <p  th:text="${incorrectCredentialError}" th:if="${not#strings.isEmpty(incorrectCredentialError)}"></p>
+        <p th:text="${updateStatus}" th:if="${not #strings.isEmpty(updateStatus)}"></p>
     </a>
 </div>
 <!--注册按钮-->
