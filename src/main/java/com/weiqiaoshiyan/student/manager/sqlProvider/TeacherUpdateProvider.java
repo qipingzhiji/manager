@@ -13,6 +13,9 @@ public class TeacherUpdateProvider extends  SQL{
             if(!StringUtils.isEmpty(teacher.getName())) {
                 SET("name = #{teacher.name,javaType=String,jdbcType=VARCHAR}");
             }
+            if(!StringUtils.isEmpty(teacher.getPerms())){
+                SET("perms=#{teacher.perms,javaType=String,jdbcType=VARCHAR}");
+            }
             if(!StringUtils.isEmpty(teacher.getAccount())) {
                 SET("account = #{teacher.account}");
             }

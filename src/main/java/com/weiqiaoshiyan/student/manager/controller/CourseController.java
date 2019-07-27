@@ -16,9 +16,8 @@ public class CourseController {
 
     @RequestMapping("/courseInfo")
     public List<Course> selectCouserInfo(Map<String,Object> conditions) {
-        conditions.put("courseName", "信息");
-        conditions.put("teacherId", "1");
-        return courseService.selectCourseInfo(conditions);
+        List<Course> courses = courseService.selectCourseInfo(conditions);
+        return courses;
     }
 
     @RequestMapping("/insertCourse")

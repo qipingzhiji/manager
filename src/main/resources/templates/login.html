@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" >
 <head>
     <meta charset="UTF-8">
-    <title>教师登录</title>
-    <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
-    <link th:href="@{/webjars/bootstrap/4.3.1/css/bootstrap.css}" rel="stylesheet" />
-    <script type="text/javascript" th:src="@{/webjars/bootstrap/4.3.1/js/bootstrap.js}"></script>
+    <title>学生登录</title>
+    <link th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/asserts/css/bootstrapValidator.css}" rel="stylesheet">
     <link th:href="@{/asserts/css/login.css}" rel="stylesheet">
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/3.4.1/js/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/bootstrapValidator.js}"></script>
     <script type="text/javascript" th:src="@{/webjars/vue/2.6.10/vue.js}"></script>
     <script type="text/javascript" th:src="@{/asserts/js/vue.resource.js}"></script>
 </head>
@@ -15,7 +18,11 @@
 <div class="col-xs-1 col-xs-offset-9 aTopAndBottom">
     <a href="" data-toggle="modal" data-target="#login">
         <span class="glyphicon glyphicon-log-in"></span>
-        <span id="loginText" >[[#{login.button_login}]]</span>
+        <span id="loginText" >[[#{login.button_login}]]</span><br>
+        <span th:text="${success}" th:if="${not #strings.isEmpty(success)}"></span>
+        <span th:text="${failed}" th:if="${not #strings.isEmpty(failed)}"></span>
+        <p  th:text="${accountError}" th:if="${not#strings.isEmpty(accountError)}" ></p>
+        <p  th:text="${incorrectCredentialError}" th:if="${not#strings.isEmpty(incorrectCredentialError)}"></p>
     </a>
 </div>
 <!--注册按钮-->
@@ -25,11 +32,12 @@
         <span id="registText" >[[#{login.button_register}]]</span>
     </a>
 </div>
-<div class="col-xs-1 aTopAndBottom">
-    <a class="btn btn-sm " th:href="@{/index(l='zh_CN')}" style="color: white;">中文</a>
+<!--<div class="col-xs-1 aTopAndBottom">
+    <a class="btn btn-sm " th:href="@{/index(l='zh_CN')}" style="color: white;">中文</a><br>
     <a class="btn btn-sm " th:href="@{/index(l='en_US')}" style="color: white;">英文</a>
-</div>
+</div>-->
 <!-- 注册 -->
+<div id="app">
 <div id="register" class="modal fade" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -42,24 +50,23 @@
                 <h1 class="text-center">注册</h1>
             </div>
             <div class="modal-body">
-                <form class="form-group" action="/student/register" method="post">
+                <form class="form-group" id="registerForm1" action="/student/register" method="post">
                     <div class="form-group">
-                        <label for="">用户名</label>
+                        <label  class="control-label">学生姓名</label>
                         <input class="form-control" name="studentName" type="text" placeholder="请输入你的真实姓名">
                     </div>
                     <div class="form-group">
-                        <label for="">学号</label>
+                        <label >学号</label>
                         <input class="form-control" name="studentNumber" type="text" placeholder="请输入你的学号">
                     </div>
                     <div class="form-group">
-                        <label for="">班级</label>
-                        <label for="">选择列表</label>
+                        <label >班级 选择列表</label>
                         <select class="form-control" name="classId">
                             <option v-for="class_item in classList"  :value="class_item.id">{{class_item.className}}</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="" >性别</label>
+                        <label  >性别</label>
                         <label class="radio-inline m-2" for="optionsRadios1">
                             <input type="radio" name="sex" id="optionsRadios1" value="1" checked> 男
                         </label>
@@ -69,15 +76,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="">密码</label>
+                        <label >密码</label>
                         <input class="form-control"  name="password" type="password" placeholder="至少6位字母或数字">
                     </div>
                     <div class="form-group">
-                        <label for="">再次输入密码</label>
-                        <input class="form-control"  type="password" placeholder="至少6位字母或数字">
+                        <label >再次输入密码</label>
+                        <input class="form-control"  name="confirmPassword" type="password" placeholder="至少6位字母或数字">
                     </div>
                     <div class="text-right">
-                        <button class="btn btn-primary"  type="submit"  style="background-color: #3a8cd2b3;border: 0px solid transparent;">提交</button>
+                        <button class="btn btn-primary" id="submitButton" type="submit"  style="background-color: #3a8cd2b3;border: 0px solid transparent;">提交</button>
                         <button class="btn btn-danger" data-dismiss="modal" style="background-color: #fb5e5999;border: 0px solid transparent;">取消</button>
                     </div>
                     <a href="" data-toggle="modal" data-dismiss="modal" data-target="#login">
@@ -102,14 +109,21 @@
                 <h1 class="text-center">登录</h1>
             </div>
             <div class="modal-body">
-                <form class="form-group" action="">
+                <form class="form-group" id="loginTable" action="/student/login" method="post">
                     <div class="form-group">
                         <label for="">你的名字</label>
-                        <input class="form-control" type="text" placeholder="">
+                        <input name="studentName" class="form-control" type="text" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label for="">班级</label>
+                        <label for="">选择列表</label>
+                        <select class="form-control" name="classId">
+                            <option v-for="class_item in classList"  :value="class_item.id">{{class_item.className}}</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="">密码</label>
-                        <input class="form-control" type="password" placeholder="">
+                        <input name="password" class="form-control" type="password" placeholder="">
                     </div>
 
                     <div class="text-right">
@@ -124,14 +138,95 @@
         </div>
     </div>
 </div>
-
+</div>
 <script type="text/javascript">
+
+    $(document).ready(function() {
+        $("#loginTable").bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },fields:{
+                studentName:{
+                    validators:{
+                        noEmpty:{
+                            message:"请输入你的真实姓名，用于登录"
+                        },
+                        stringLength:{
+                            min:2,
+                            max:4,
+                            message:"用户名长度只能在2到4位之间"
+                        },
+                        regexp: {
+                            regexp: /^[\u4E00-\u9FA5_\.]+$/,
+                            message: '只能输入汉字'
+                        }
+                    }
+                },password:{
+                    validators:{
+                        noEmpty:{
+                            message:"请输入密码"
+                        }
+                    }
+                }
+            }
+        });
+        $("#registerForm1").bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields:{
+                studentName:{
+                    validators:{
+                        noEmpty:{
+                            message:"请输入你的真实姓名，用于登录"
+                        },
+                        stringLength:{
+                            min:2,
+                            max:4,
+                            message:"用户名长度只能在2到4位之间"
+                        },
+                        regexp: {
+                            regexp: /^[\u4E00-\u9FA5_\.]+$/,
+                            message: '只能输入汉字'
+                        }
+                    }
+                },
+                password:{
+                    validators:{
+                        noEmpty:{
+                            message:"请输入密码"
+                        }
+                    }
+                },
+                confirmPassword:{
+                    validators:{
+                        noEmpty:{
+                            message:"请输入确认密码"
+                        },
+                        identical:{
+                            field:'password',
+                            message:"两次输入的密码不一致"
+                        }
+                    }
+                }}});
+    })
+
     var vue =new Vue({
-        el: '#register',
+        el: '#app',
         data:{
-            classList:[]
+            classList:[],
+            styleObject:{
+                color: 'red'
+            }
         },
         methods:{
+
+        },
+        beforeMount:function () {
 
         },
         mounted: function () {
@@ -140,7 +235,7 @@
             this.$http.post(url,conditions).then(function (res) {
                 this.classList = res.data;
             },function (res) {
-                alert("failed");
+
             });
         }
     });

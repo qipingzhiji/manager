@@ -12,7 +12,7 @@ import java.util.Map;
 @Mapper
 @Repository
 public interface TeacherMapper {
-    @Insert("insert into teacher(name,account,password) values(#{name},#{account},#{password})")
+    @Insert("insert into teacher(name,account,password,perms) values(#{name},#{account},#{password},#{perms})")
     int insertTeacher(Teacher teacher);
 
     @Delete("<script>" +
@@ -28,5 +28,8 @@ public interface TeacherMapper {
 
     @UpdateProvider(value = TeacherUpdateProvider.class,method = "update")
     int updateTeacher(@Param("teacher") Teacher teacher);
+
+    @Select("select * from teacher where id =#{id}")
+    Teacher selectTeacherById(Integer id);
 
 }

@@ -8,6 +8,23 @@ spring:
     url: jdbc:sqlite:D:\sqlite3Database\main.db
     password:
     username:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      # 连接池的配置信息
+            # 初始化大小，最小，最大
+            initial-size: 10
+            min-idle: 5
+            maxActive: 60
+            # 配置获取连接等待超时的时间
+            maxWait: 60000
+            # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+            timeBetweenEvictionRunsMillis: 60000
+            # 配置一个连接在池中最小生存的时间，单位是毫秒
+            minEvictableIdleTimeMillis: 300000
+            validationQuery: SELECT 1 FROM sqlite_sequence
+            testWhileIdle: true
+            testOnBorrow: false
+            testOnReturn: false
   messages:
     basename: i18n.login
   thymeleaf:
@@ -16,8 +33,8 @@ spring:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+    cache-enabled: true #开启mybatis的二级缓存策略
   type-aliases-package: com.weiqiaoshiyan.student.manager.entity
-
 logging:
   level:
     com.weiqiaoshiyan.student.manager.mapper: debug

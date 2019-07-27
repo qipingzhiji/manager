@@ -2,13 +2,14 @@ package com.weiqiaoshiyan.student.manager.entity;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by zhang_htao on 2019/7/24.
  */
 @Data
-public class StudentInfo {
+public class StudentInfo implements Serializable{
     private Integer id;
     private String studentNumber;
     private String studentName;
@@ -16,4 +17,6 @@ public class StudentInfo {
     private String password;
     private Integer classId;
     private Date createTime;
+    private ClassInfo classInfo;
+    private Course course;
 }

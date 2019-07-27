@@ -13,6 +13,7 @@ import java.util.Map;
  */
 @Mapper
 @Repository
+@CacheNamespace
 public interface ClassInfoMapper {
 
     @Insert("insert into class_info(class_name,class_comment) values(#{className},#{classComment})")
@@ -58,4 +59,6 @@ public interface ClassInfoMapper {
             "</script>")
     List<ClassInfo> selectClassInfoByConditions(Map<String,Object> conditions);
 
+    @Select("select * from class_info where id  = #{classId}")
+    ClassInfo selectById(Integer classId);
 }

@@ -3,10 +3,13 @@ package com.weiqiaoshiyan.student.manager.controller;
 import com.weiqiaoshiyan.student.manager.entity.Student;
 import com.weiqiaoshiyan.student.manager.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -15,25 +18,15 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
 
-    @RequestMapping("/submit")
-    public Object studentInfoSubmit() {
-        Student student = new Student();
-        student.setBeginTime(new Date());
-        student.setClassNum("0613");
-        student.setCourseId(1);
-        student.setStudentName("admin");
-        return studentService.studentSubmit(student);
-    }
-
     @RequestMapping("/allStudentInfo")
     public Object listAllStudentInfo() {
         return  studentService.selectAll();
     }
 
     @RequestMapping("/listInfoByConditions")
-    public Object listStudentInfoByConditions(Map<String, Object> conditions) {
-        conditions.put("studentName", "ad");
-        return  studentService.selectByConditon(conditions);
+    public Object listStudentInfoByConditions(@RequestParam Map<String, Object> conditions) {
+        List<Student> students = studentService.selectByConditon(conditions);
+        return students;
     }
 
 

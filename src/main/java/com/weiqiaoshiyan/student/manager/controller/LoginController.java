@@ -1,10 +1,27 @@
 package com.weiqiaoshiyan.student.manager.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.weiqiaoshiyan.student.manager.entity.Course;
+import com.weiqiaoshiyan.student.manager.entity.Student;
 import com.weiqiaoshiyan.student.manager.entity.StudentInfo;
+import com.weiqiaoshiyan.student.manager.mapper.StudentMapper;
+import com.weiqiaoshiyan.student.manager.service.CourseService;
 import com.weiqiaoshiyan.student.manager.service.StudentInfoService;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.sqlite.date.DateFormatUtils;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by zhang_htao on 2019/7/23.
@@ -15,9 +32,104 @@ public class LoginController {
     @Autowired
     private StudentInfoService service;
 
+    @Autowired
+    private StudentMapper studentLessonService;
+
+    @Autowired
+    private CourseService courseService;
+
     @RequestMapping("/student/register")
-    public Object studentRegister(StudentInfo studentInfo) {
-        return (service.studentRegister(studentInfo))?"success":"login";
+    public Object studentRegister(StudentInfo studentInfo,Map<String,String> map) {
+        Map<String,Object> conditions = new HashMap<>();
+        conditions.put("studentName",studentInfo.getStudentName());
+        conditions.put("classId",studentInfo.getClassId());
+        conditions.put("login",true);
+        if(service.studentRegisterOnly(conditions)){
+        if(service.studentRegister(studentInfo)){
+            map.put("success","你已经注册成功，请登录来进行签到操作");
+        }else{
+            map.put("failed","注册失败,请联系老师来进行学生信息的录入");
+        }}else  {
+            map.put("failed","当前班级已经有叫[ " +  studentInfo.getStudentName() + " ]进行注册了，请尝试在名字后辍下添加数字继续进行注册");
+        };
+        return "login";
+    }
+
+    @RequestMapping("/student/student_sign")
+    public Object studentSignInfo(@ModelAttribute("loginStudent") String loginStudent,@ModelAttribute("updateStatus") String updateStatus, Map<String,Object> res) {
+        StudentInfo studentInfo = JSONObject.parseObject(loginStudent, StudentInfo.class);
+        res.put("loginStudent", studentInfo);
+        res.put("updateStatus",updateStatus);
+        return "student_sign";
+    }
+
+    @RequestMapping("/student/login")
+    public Object studentLogin(@RequestParam Map<String, Object> conditions, RedirectAttributes redirectAttributes, Model model) {
+        Map<String, String> errorMap = service.studentLogin(conditions);
+        if (errorMap.get("errorPage") != null) {
+            model.addAllAttributes(errorMap);
+            return errorMap.get("errorPage");
+        }
+        StudentInfo studentInfo = (StudentInfo) SecurityUtils.getSubject().getPrincipal();
+        String json = JSONObject.toJSONString(studentInfo);
+        redirectAttributes.addAttribute("loginStudent",json );
+
+        return "redirect:/student/student_sign";
+    }
+
+    @RequestMapping("/student/signed")
+    @ResponseBody
+    public Object signed( Student student){
+        Map<String,Object> message = new HashMap<>();
+        Date now = new Date();
+        student.setBeginTime(now);
+        String format = DateFormatUtils.format(now, "yyyy-MM-dd");
+        Map<String,Object> conditions = new HashMap<>();
+        conditions.put("studentId",student.getStudentId());
+        conditions.put("beginTime",format);
+        List<Student> students = studentLessonService.selectByCondition(conditions);
+        if(students.size() > 0) {
+            conditions.clear();
+            conditions.put("id",student.getCourseId());
+            conditions.put("teacherId",student.getTeacherId());
+            List<Course> courses = courseService.selectCourseInfo(conditions);
+            Date beginTime = students.get(0).getBeginTime();
+            Integer courseTime = courses.get(0).getCourseTime();
+            if(now.getTime()-beginTime.getTime()>courseTime){
+                message.put("success","签到成功");
+            } else {
+                message.put("failed","在授课时间[" + courseTime+"]内已经签过到，不用继续签到");
+            }
+        }
+        return studentLessonService.insert(student) > 0;
+    }
+
+    @RequestMapping("/student/updateInfo")
+    public Object updateStudentInfo(StudentInfo studentInfo ,RedirectAttributes redirectAttributes,Model model){
+        if("".equals(studentInfo.getPassword())){
+            studentInfo.setPassword(null);
+        }
+        StudentInfo studentInfoOne = service.getStudentInfoById(studentInfo.getId());
+        if(service.updateStudentInfo(studentInfo)){
+            //更新shiro认证的信息
+            Subject subject = SecurityUtils.getSubject();
+            PrincipalCollection previousPrincipals = subject.getPreviousPrincipals();
+            String realmName = "";
+            if(previousPrincipals !=null){
+                realmName = previousPrincipals.getRealmNames().iterator().next();
+            }
+             realmName = subject.getPrincipals().getRealmNames().iterator().next();
+            SimplePrincipalCollection simplePrincipalCollection = new SimplePrincipalCollection(studentInfoOne,realmName);
+            subject.runAs(simplePrincipalCollection);
+            //重定向时发送参数
+            redirectAttributes.addAttribute("updateStatus","学生信息更新成功");
+        }else{
+            redirectAttributes.addAttribute("updateStatus","学生信息更新失败");
+        }
+        Object principal = SecurityUtils.getSubject().getPrincipal();
+        String json = JSONObject.toJSONString(studentInfoOne);
+        redirectAttributes.addAttribute("loginStudent",json );
+        return "redirect:/student/student_sign";
     }
 
 }
