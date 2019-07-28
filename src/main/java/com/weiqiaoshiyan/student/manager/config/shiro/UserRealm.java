@@ -1,5 +1,6 @@
 package com.weiqiaoshiyan.student.manager.config.shiro;
 
+import com.weiqiaoshiyan.student.manager.constant.LoginType;
 import com.weiqiaoshiyan.student.manager.entity.StudentInfo;
 import com.weiqiaoshiyan.student.manager.mapper.StudentInfoMapper;
 import org.apache.shiro.authc.*;
@@ -51,6 +52,6 @@ public class UserRealm extends AuthorizingRealm {
             return null;
         }
         ByteSource byteSource = ByteSource.Util.bytes(studentInfos.get(0).getSalt());
-        return new SimpleAuthenticationInfo(studentInfos.get(0),studentInfos.get(0).getPassword(),byteSource,getName());
+        return new SimpleAuthenticationInfo(studentInfos.get(0),studentInfos.get(0).getPassword(),byteSource, LoginType.STUDENT.getLogin());
     }
 }

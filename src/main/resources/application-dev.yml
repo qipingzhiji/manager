@@ -29,6 +29,8 @@ spring:
     basename: i18n.login
   thymeleaf:
     cache: false
+  aop:
+    proxy-target-class: true
 #mybatis开启驼峰命名映射
 mybatis:
   configuration:

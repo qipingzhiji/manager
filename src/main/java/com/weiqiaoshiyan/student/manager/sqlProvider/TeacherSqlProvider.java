@@ -18,8 +18,15 @@ public class TeacherSqlProvider extends  SQL{
                         WHERE("id = #{id}");
                     } else {
                         if (!StringUtils.isEmpty(conditons.get("name"))) {
-                            conditons.put("name", "%"+conditons.get("name")+"%");
-                            WHERE("name like #{name}");
+                            if(!StringUtils.isEmpty(conditons.get("isLike"))) {
+                                conditons.put("name", "%" + conditons.get("name") + "%");
+                                WHERE(" name like #{name}");
+                            } else{
+                                WHERE("name = #{name}");
+                            }
+                        }
+                        if(!StringUtils.isEmpty(conditons.get("account"))){
+                            WHERE("account=#{account}");
                         }
                     }
                 }

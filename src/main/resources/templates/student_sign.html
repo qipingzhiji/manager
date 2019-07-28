@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" >
 <head>
     <meta charset="UTF-8">
-    <title>教师登录</title>
+    <title>学生签到</title>
     <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
     <link th:href="@{/asserts/css/login.css}" rel="stylesheet">
     <link th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.css}" rel="stylesheet" />
@@ -14,7 +14,6 @@
     <script type="text/javascript" th:src="@{/asserts/js/bootstrapValidator.js}"></script>
     <script type="text/javascript" th:src="@{/webjars/vue/2.6.10/vue.js}"></script>
     <script type="text/javascript" th:src="@{/asserts/js/vue.resource.js}"></script>
-    <script type="text/javascript" th:src="@{/asserts/js/jquery.dataTables.js}"></script>
     <script type="text/javascript" th:src="@{/asserts/js/jquery.dataTables.js}"></script>
 </head>
 <body>
@@ -37,7 +36,7 @@
                 <h1 class="text-center">更新个人信息</h1>
             </div>
             <div class="modal-body">
-                <form class="form-group" id="registerForm1" action="/student/updateInfo" method="post">
+                <form class="form-group" id="updateStudentInfoForm1" action="/student/updateInfo" method="post">
                     <div class="form-group" style="display: none">
                         <label for="">学生id</label>
                         <input class="form-control" type="text"  id="studentId" name="id" readonly th:value="${loginStudent.id}" >
@@ -50,12 +49,6 @@
                         <label >学号</label>
                         <input class="form-control" th:value="${loginStudent.studentNumber}" name="studentNumber" type="text" placeholder="请输入你的学号">
                     </div>
-                    <!--<div class="form-group">
-                        <label >班级 选择列表</label>
-                        <select class="form-control" name="classId">
-                            <option v-for="class_item in classList"  :value="class_item.id">{{class_item.className}}</option>
-                        </select>
-                    </div>-->
                     <div class="form-group">
                         <label  >性别</label>
                         <label class="radio-inline m-2" for="optionsRadios1">
@@ -178,12 +171,53 @@
                 }
             }
         });
+
+        $("#updateStudentInfoForm1").bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields:{
+                studentName:{
+                    validators:{
+                        notEmpty:{
+                            message:"请输入你的真实姓名，用于登录"
+                        },
+                        stringLength:{
+                            min:2,
+                            max:4,
+                            message:"用户名长度只能在2到4位之间"
+                        },
+                        regexp: {
+                            regexp: /^[\u4E00-\u9FA5_\.]+$/,
+                            message: '只能输入汉字'
+                        }
+                    }
+                },
+                password:{
+                    validators:{
+                        notEmpty:{
+                            message:"请输入密码"
+                        }
+                    }
+                },
+                confirmPassword:{
+                    validators:{
+                        notEmpty:{
+                            message:"请输入确认密码"
+                        },
+                        identical:{
+                            field:'password',
+                            message:"两次输入的密码不一致"
+                        }
+                    }
+                }}});
     });
 
     function changeTeacher(obj) {
         for(var ts of vue.courseInfo) {
             if(obj.value == ts.id){
-                debugger;
                 vue.teacherName = ts.teacher.name;
                 vue.teacherId = ts.teacher.id;
             }

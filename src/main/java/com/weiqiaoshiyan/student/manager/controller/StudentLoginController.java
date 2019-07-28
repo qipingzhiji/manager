@@ -9,10 +9,12 @@ import com.weiqiaoshiyan.student.manager.service.CourseService;
 import com.weiqiaoshiyan.student.manager.service.StudentInfoService;
 import org.apache.commons.beanutils.converters.DateTimeConverter;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -31,7 +33,7 @@ import java.util.Map;
  * Created by zhang_htao on 2019/7/23.
  */
 @Controller
-public class LoginController {
+public class StudentLoginController {
 
     @Autowired
     private StudentInfoService service;
@@ -42,6 +44,10 @@ public class LoginController {
     @Autowired
     private CourseService courseService;
 
+    @Value(value = "${mysharo.hashAlgorithmName}")
+    private  String hashAlgorithmName;
+    @Value(value = "${mysharo.hashIterations}")
+    private int hashIterations;
     @RequestMapping("/student/register")
     public Object studentRegister(StudentInfo studentInfo,Map<String,String> map) {
         Map<String,Object> conditions = new HashMap<>();
@@ -79,6 +85,8 @@ public class LoginController {
                 return errorMap.get("errorPage");
             }
             StudentInfo studentInfo = (StudentInfo) SecurityUtils.getSubject().getPrincipal();
+            studentInfo.setPassword(null);
+            studentInfo.setSalt(null);
             json = JSONObject.toJSONString(studentInfo);
         }else{
             json =updateLoginStudentInfo;
@@ -129,6 +137,11 @@ public class LoginController {
     public Object updateStudentInfo(StudentInfo studentInfo ,RedirectAttributes redirectAttributes,Model model){
         if("".equals(studentInfo.getPassword())){
             studentInfo.setPassword(null);
+        } else{
+            StudentInfo studentInfoById = service.getStudentInfoById(studentInfo.getId());
+            String salt = studentInfoById.getSalt();
+            Object password = new SimpleHash(hashAlgorithmName, studentInfo.getPassword(), salt,hashIterations);
+            studentInfo.setPassword(password.toString());
         }
         StudentInfo studentInfoOne = null;
         if(service.updateStudentInfo(studentInfo)){
@@ -153,6 +166,8 @@ public class LoginController {
             return  "login";
         }
         Object principal = SecurityUtils.getSubject().getPrincipal();
+        studentInfoOne.setSalt(null);
+        studentInfoOne.setPassword(null);
         String json = JSONObject.toJSONString(studentInfoOne);
         redirectAttributes.addAttribute("loginStudent",json );
 

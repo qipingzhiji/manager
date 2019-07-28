@@ -1,15 +1,34 @@
 package com.weiqiaoshiyan.student.manager.service;
 
+import com.alibaba.fastjson.JSONObject;
+import com.weiqiaoshiyan.student.manager.config.shiro.StudentAndTeacherUsernamePasswordToken;
+import com.weiqiaoshiyan.student.manager.config.shiro.UserModularRealmAuthenticator;
+import com.weiqiaoshiyan.student.manager.constant.LoginType;
 import com.weiqiaoshiyan.student.manager.entity.Teacher;
 import com.weiqiaoshiyan.student.manager.mapper.TeacherMapper;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class TeacherService {
+    @Value("${mysharo.hashIterations}")
+    private int hashIterations;
+    @Value("${mysharo.hashAlgorithmName}")
+    private String hashAlgorithmName;
     @Autowired
     private TeacherMapper teacherMapper;
 
@@ -27,5 +46,50 @@ public class TeacherService {
 
     public boolean updateTeacher(Teacher teacher) {
         return teacherMapper.updateTeacher(teacher) > 0;
+    }
+
+
+
+    public Object login(Teacher teacher) {
+        Map<String,String> message = new HashMap<>();
+        Subject subject = SecurityUtils.getSubject();
+        StudentAndTeacherUsernamePasswordToken userModularRealmAuthenticator = new StudentAndTeacherUsernamePasswordToken(
+                teacher.getAccount(),
+                teacher.getPassword(),
+                LoginType.TEACHER.getLogin()
+        );
+
+        try {
+            subject.login(userModularRealmAuthenticator);
+        } catch (UnknownAccountException e) {
+            message.put("error","没有该帐户");
+            return  message;
+        } catch (IncorrectCredentialsException e) {
+            message.put("error","密码不匹配");
+            return  message;
+        }
+        message.put("success","登录成功");
+        return message;
+    }
+
+    public Object register(Map<String,Object> user) {
+        String s = JSONObject.toJSONString(user);
+        Teacher teacher = JSONObject.parseObject(s, Teacher.class);
+        String randomAlphabetic = RandomStringUtils.randomAlphabetic(30);
+        teacher.setSalt(randomAlphabetic);
+        Object password = new SimpleHash(hashAlgorithmName, teacher.getPassword(), randomAlphabetic, hashIterations);
+        teacher.setPassword(password.toString());
+        return teacherMapper.insertTeacher(teacher)>0;
+    }
+
+    public Object isOnlyAccount(Map<String,Object> conditions) {
+        Object teacherAccount = conditions.get("teacherAccount");
+        conditions.clear();
+        conditions.put("account",teacherAccount);
+            if (teacherMapper.selectTeachers(conditions).size()>0) {
+            return  false;
+        }else{
+            return  true;
+        }
     }
 }

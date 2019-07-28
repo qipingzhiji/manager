@@ -1,14 +1,13 @@
 package com.weiqiaoshiyan.student.manager.service;
 
+import com.weiqiaoshiyan.student.manager.config.shiro.StudentAndTeacherUsernamePasswordToken;
+import com.weiqiaoshiyan.student.manager.constant.LoginType;
 import com.weiqiaoshiyan.student.manager.entity.StudentInfo;
 import com.weiqiaoshiyan.student.manager.mapper.StudentInfoMapper;
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.*;
-import org.apache.shiro.authc.pam.UnsupportedTokenException;
-import org.apache.shiro.crypto.RandomNumberGenerator;
-import org.apache.shiro.crypto.SecureRandomNumberGenerator;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,6 +33,7 @@ public class StudentInfoService {
     public boolean studentRegister(StudentInfo studentInfo) {
         String randomAlphabetic = RandomStringUtils.randomAlphabetic(30);
         studentInfo.setSalt(randomAlphabetic);
+        studentInfo.setCreateTime(new Date());
         Object password = new SimpleHash(hashAlgorithmName, studentInfo.getPassword(), randomAlphabetic,hashIterations);
         studentInfo.setPassword(password.toString());
         studentInfo.setCreateTime(new Date());
@@ -69,7 +68,7 @@ public class StudentInfoService {
         //获取登录用户的subject
         Subject subject = SecurityUtils.getSubject();
         //设置token
-        UsernamePasswordToken token = new UsernamePasswordToken(conditions.get("studentName").toString() + "_" +conditions.get("classId").toString() ,conditions.get("password").toString());
+        StudentAndTeacherUsernamePasswordToken token = new StudentAndTeacherUsernamePasswordToken(conditions.get("studentName").toString() + "_" +conditions.get("classId").toString() ,conditions.get("password").toString(), LoginType.STUDENT.getLogin());
         //通过设置的token来进行登录
         try {
             //下面一行代码代表开启了rememberMe功能
