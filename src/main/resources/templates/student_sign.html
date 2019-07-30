@@ -197,16 +197,14 @@
                 },
                 password:{
                     validators:{
-                        notEmpty:{
-                            message:"请输入密码"
+                        identical:{
+                            field:'confirmPassword',
+                            message:"两次输入的密码不一致"
                         }
                     }
                 },
                 confirmPassword:{
                     validators:{
-                        notEmpty:{
-                            message:"请输入确认密码"
-                        },
                         identical:{
                             field:'password',
                             message:"两次输入的密码不一致"

@@ -51,7 +51,7 @@ public class TeacherService {
 
 
     public Object login(Teacher teacher) {
-        Map<String,String> message = new HashMap<>();
+        Map<String,Object> message = new HashMap<>();
         Subject subject = SecurityUtils.getSubject();
         StudentAndTeacherUsernamePasswordToken userModularRealmAuthenticator = new StudentAndTeacherUsernamePasswordToken(
                 teacher.getAccount(),
@@ -68,7 +68,9 @@ public class TeacherService {
             message.put("error","密码不匹配");
             return  message;
         }
+        Teacher login =  (Teacher)subject.getPrincipals().getPrimaryPrincipal();
         message.put("success","登录成功");
+        message.put("id",login.getId());
         return message;
     }
 
