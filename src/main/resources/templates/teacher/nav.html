@@ -5,29 +5,17 @@
     <title>nav</title>
 </head>
 <body>
-<nav class="navbar navbar-inverse" role="navigation" th:fragment="topnav" >
+<nav class="navbar navbar-inverse" role="navigation" th:fragment="topnav(activeUrl)" >
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">当前登录用户:</a>
+            <a class="navbar-brand" href="#">当前登录用户:[[${session.loginUser.name}]]</a>
         </div>
         <div>
             <ul class="nav navbar-nav">
-                <li class="active"><a href="#">iOS</a></li>
-                <li><a href="#">SVN</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        Java <b class="caret"></b>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">jmeter</a></li>
-                        <li><a href="#">EJB</a></li>
-                        <li><a href="#">Jasper Report</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">分离的链接</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">另一个分离的链接</a></li>
-                    </ul>
-                </li>
+                <li class="" th:class="${activeUrl=='manager'?'active':''}"><a href="#" th:href="@{'/teacher/teacherManager/' + ${session.loginUser.id}}">首页</a></li>
+                <li class="" th:class="${activeUrl=='classInfo'?'active':''}"><a href="#"  th:href="@{/classInfo}">班级管理</a></li>
+                <li class="" th:class="${activeUrl=='studentInfo'?'active':''}"><a href="#"  th:href="@{/studentPage}">学生管理</a></li>
+                <li class="" th:class="${activeUrl=='courseInfo'?'active':''}" ><a href="#" th:href="@{/courses}">课程管理</a></li>
             </ul>
         </div>
     </div>

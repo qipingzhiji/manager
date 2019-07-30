@@ -71,6 +71,7 @@ public class TeacherService {
         Teacher login =  (Teacher)subject.getPrincipals().getPrimaryPrincipal();
         message.put("success","登录成功");
         message.put("id",login.getId());
+        message.put("loginUser",login.getName());
         return message;
     }
 

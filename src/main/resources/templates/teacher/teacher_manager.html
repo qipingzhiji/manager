@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>登录成功</title>
+    <link th:href="@{/asserts/css/jquery.dataTables.css}" rel="stylesheet">
     <link th:href="@{/asserts/css/bootstrapValidator.css}" rel="stylesheet">
     <link th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.min.css}" rel="stylesheet" />
     <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
@@ -10,15 +11,138 @@
     <script type="text/javascript" th:src="@{/asserts/js/bootstrapValidator.js}"></script>
     <script type="text/javascript" th:src="@{/webjars/vue/2.6.10/vue.js}"></script>
     <script type="text/javascript" th:src="@{/asserts/js/vue.resource.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/jquery.dataTables.js}"></script>
 </head>
 <body>
-<div class="col-md-12" >
-<div th:replace="~{nav::topnav}" ></div>
+<div id="app" class="col-md-12" >
+<div th:replace="~{teacher/nav::topnav(activeUrl='manager')}" ></div>
+    <div class="col-md-10 col-md-offset-1">
+        <table class="table table-striped" id="student_signed_table">
+            <caption class="text-center">学生签到信息</caption>
+            <thead>
+            <tr>
+                <th>学生姓名</th>
+                <th>班级</th>
+                <th>签到时间</th>
+                <th>授课老师</th>
+                <th>学科</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
 </div>
 
 </body>
-<script>
+<script th:inline="javascript">
     var vue = new Vue({
+        el:'#app',
+        data:{
+            teacherId: /*[[${id}]]*/
+        },
+        methods:{
+
+        },
+        mounted:function () {
+            $("#student_signed_table").DataTable(
+                {
+                    "paging": true,
+                    "iDisplayLength": 10, //默认每页数量
+                    //"bPaginate": true, //翻页功能
+                    "bLengthChange": false, //改变每页显示数据数量
+                    "bFilter": true, //过滤功能
+                    "bSort": true, //排序功能
+                    "bInfo": true, //页脚信息
+                    "bAutoWidth": true, //自动宽度
+                    "bRetrieve": true,
+                    "processing": true,
+                    "autoWidth" : true,
+                    "serverSide" : true,//服务器端进行分页处理的意思
+                    "bPaginate": true,
+                    //"bProcessing": true
+                    "jqueryui":true,
+                    scrollY:true,
+                    /* "ajax": {
+                     url: "/listInfoByConditions",
+                     data:function (d) {
+                     var condition ={};
+                     var student = $("#studentId").val();
+                     condition.studentId = student;
+                     d.extra_search =condition;
+                     },
+                     dataSrc: function(result) {
+                     //这里result和上面jquery的ajax的代码类似，也是可以得到data.json的数据，但是这样的格式，Datatables不能直接使用，这时候需要在这里处理一下
+                     //直接返回Datatables需要的那部分数据即可
+                     return result;
+                     }
+                     },*/
+                    'ajax':function(data, callback, settings) {
+                        var param = {};
+                        param.limit = data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
+                        param.start = data.start;//开始的记录序号
+                        param.page = (data.start / data.length) + 1;//当前页码
+                        param.search = data.search.value;//搜索条件
+                        param.teacherId = /*[[${id}]]*/;
+                        if (data.order.length > 0) {
+                            param.order = data.columns[data.order[0].column].data;
+                            param.dir = data.order[0].dir;
+                        }
+                        $.ajax({
+                            "url": "/teacher/listSignedStudentInfo",
+                            "type":"post",
+                            "data":param,
+                            "dataType":"json",
+                            "success":function (result) {
+                                //封装返回数据
+                                var returnData = {};
+                                returnData.draw = data.draw;//这里直接自行返回了draw计数器,应该由后台返回
+                                returnData.recordsTotal = result.total;//返回数据全部记录
+                                returnData.recordsFiltered = result.total;//后台不实现过滤功能，每次查询均视作全部结果
+                                returnData.data = result.list;//返回的数据列表
+                                callback(returnData);
+                            }
+                        });
+                    },
+                    columns : [
+                        {
+                            data : "studentName"
+                        },
+                        {
+                            data : "classInfo.className"
+                        },
+                        {
+                            data: function (obj) {
+                                var dateTime = new Date(obj.beginTime).toJSON();
+                                var date = new Date(+new Date(dateTime)+8*3600*1000).toISOString().replace(/T/g,' ').replace(/\.[\d]{3}Z/,'');
+                                return date;
+                            }
+                        },{
+                            data: "teacher.name"
+                        },
+                        {
+                            data: "course.courseName"
+                        }
+                    ],"oLanguage": { //国际化配置
+                    "sProcessing" : "正在获取数据，请稍后...",
+                    "sLengthMenu" : "显示 _MENU_ 条",
+                    "sZeroRecords" : "没有您要搜索的内容",
+                    "sInfo" : "从 _START_ 到  _END_ 条记录 总记录数为 _TOTAL_ 条",
+                    "sInfoEmpty" : "记录数为0",
+                    "sInfoFiltered" : "(全部记录数 _MAX_ 条)",
+                    "sInfoPostFix" : "",
+                    "sSearch" : "搜索",
+                    "sUrl" : "",
+                    "oPaginate": {
+                        "sFirst" : "第一页",
+                        "sPrevious" : "上一页",
+                        "sNext" : "下一页",
+                        "sLast" : "最后一页"
+                    }
+                }}
+            );
+        }
 
     });
 </script>

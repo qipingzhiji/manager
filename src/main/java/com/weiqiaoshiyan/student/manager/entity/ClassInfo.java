@@ -11,5 +11,6 @@ import java.io.Serializable;
 public class ClassInfo  implements Serializable{
     private Integer id;
     private String className;
+    private Integer studentNumber;
     private String classComment;
 }

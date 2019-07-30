@@ -15,4 +15,5 @@ public class Student {
     private Integer teacherId;
     private Course course;
     private Teacher teacher;
+    private ClassInfo classInfo;
 }

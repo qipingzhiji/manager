@@ -45,6 +45,12 @@ public interface StudentMapper {
             "<if test='studentId != null'>" +
             "and student_id =#{studentId}" +
             "</if>" +
+            "<if test='courseId!=null'>" +
+            "and course_id =#{courseId}" +
+            "</if>" +
+            "<if test='teacherId !=null'>" +
+            "and teacher_id = #{teacherId}" +
+            "</if>" +
             "</where>" +
             "order by begin_time desc" +
             "</script>")
@@ -68,7 +74,9 @@ public interface StudentMapper {
             @Result(column = "student_id",property = "studentId"),
             @Result(column = "teacher_id",property = "teacherId"),
             @Result(column = "course_id",property = "course",one = @One(select = "com.weiqiaoshiyan.student.manager.mapper.CourseMapper.selectCousreById")),
-            @Result(column = "teacher_id",property ="teacher",one = @One(select = "com.weiqiaoshiyan.student.manager.mapper.TeacherMapper.selectTeacherById"))
+            @Result(column = "teacher_id",property ="teacher",one = @One(select = "com.weiqiaoshiyan.student.manager.mapper.TeacherMapper.selectTeacherById")
+            ),
+            @Result(column = "class_num",property = "classInfo",one=@One(select = "com.weiqiaoshiyan.student.manager.mapper.ClassInfoMapper.selectById"))
     })
     List<Student> selectByCondition(Map<String, Object> conditions);
 

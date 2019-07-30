@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>课程管理</title>
+    <link th:href="@{/asserts/css/jquery.dataTables.css}" rel="stylesheet">
+    <link th:href="@{/asserts/css/bootstrapValidator.css}" rel="stylesheet">
+    <link th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/3.4.1/js/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/bootstrapValidator.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/vue/2.6.10/vue.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/vue.resource.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/jquery.dataTables.js}"></script>
+</head>
+<body>
+<div class="col-md-12">
+    <div th:replace="~{teacher/nav :: topnav(activeUrl='courseInfo')}"></div>
+    <div class="col-md-10 col-md-offset-1">
+        <table class="table">
+            <caption>基本的表格布局</caption>
+            <thead>
+            <tr>
+                <th>id</th>
+                <th>课程名</th>
+                <th>任课教师</th>
+                <th>课程时长</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="course : ${courses}">
+                <td th:text="${course.id}"></td>
+                <td th:text="${course.courseName}"></td>
+                <td th:text="${course.teacher.name}"></td>
+                <td th:text="${course.courseTime}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -27,7 +27,8 @@
             <p class="tooltip-success" data-toggle="tooltip"  title="注册成功，请登录来使用本系统"></p>
             <p class="tooltip-failed" data-toggle="tooltip"  title="注册失败，请重新注册"></p>
             <p class="tooltip-login_input_error" data-toggle="tooltip"  title="输入的登录信息有误，请重新输入"></p>
-            <p v-bind:class="errorClass" v-bind:style="{display:isDispaly}" > {{error}}</p>
+            <!--<p v-bind:class="errorClass" v-bind:style="{display:isDispaly}" > {{error}}</p>-->
+            <p style="color:red" th:text="${error}" th:if="${not #strings.isEmpty(error)}">1</p>
             <label>教师登录帐号名</label>
             <input type="text" v-model="account" class="form-control"  name="userName" placeholder="请输入你的帐号名" />
             <input type="hidden" id="other">
@@ -81,6 +82,10 @@
         </div>
 
     </div>
+    <form id="temp_form" style="display: none">
+        <input name="account" type="text" v-model="account" />
+        <input name="password" type="password" v-model="password" />
+    </form>
 </div>
 </body>
 <script type="text/javascript">
@@ -101,7 +106,7 @@
             login_in:function () {
                 var valid = $("#registerForm").data("bootstrapValidator").isValid();
                 if(valid){
-                    var url = "/teacher/loginIn";
+                    /*var url = "/teacher/loginIn";
                     var data={
                         "account": this.account,
                         "password": this.password
@@ -120,7 +125,10 @@
                         }
                     },function (res) {
 
-                    });
+                    });*/
+                    $("#temp_form").attr("action","/teacher/loginIn");
+                    $("#temp_form").attr("method","post");
+                    $("#temp_form").submit();
                 }else{
                     $(".tooltip-login_input_error").tooltip('show');
                     setInterval( function () {

@@ -97,7 +97,7 @@ public interface StudentInfoMapper {
                     @Result(column ="password",property = "password"),
                     @Result(column = "class_id",property = "classId"),
                     @Result(column = "create_time",property = "createTime"),
-                    @Result(column = "class_id", property = "classInfo",one = @One(select = "com.weiqiaoshiyan.student.manager.mapper.ClassInfoMapper.selectById",fetchType = FetchType.LAZY )),
+                    @Result(column = "class_id", property = "classInfo",one = @One(select = "com.weiqiaoshiyan.student.manager.mapper.ClassInfoMapper.selectById",fetchType = FetchType.EAGER )),
             }
     )
     List<StudentInfo> listByConditon(Map<String, Object> collections);

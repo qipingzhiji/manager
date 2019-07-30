@@ -18,6 +18,6 @@ public class StudentInfo implements Serializable{
     private Integer classId;
     private Date createTime;
     private ClassInfo classInfo;
-    private Course course;
+    //private Course course;
     private String salt;
 }

@@ -107,6 +107,7 @@ public class StudentLoginController {
         student.setBeginTime(now);
         Map<String,Object> conditions = new HashMap<>();
         conditions.put("studentId",student.getStudentId());
+        conditions.put("courseId",student.getCourseId());
         List<Student> students = studentLessonService.selectByCondition(conditions);
         if(students.size() > 0) {
             conditions.clear();

@@ -16,17 +16,20 @@ import java.util.Map;
 @CacheNamespace
 public interface ClassInfoMapper {
 
-    @Insert("insert into class_info(class_name,class_comment) values(#{className},#{classComment})")
+    @Insert("insert into class_info(class_name,class_comment,student_number) values(#{className},#{classComment},#{studentNumber})")
     int insert(ClassInfo classInfo);
 
     @Update("<script>" +
             "update class_info " +
             "<set>" +
             "<if test='className !=null'>" +
-            "class_name =#{className}" +
+            "class_name =#{className}," +
             "</if>" +
             "<if test='classComment !=null'>" +
-            "class_comment=#{classComment}" +
+            "class_comment=#{classComment}," +
+            "</if>" +
+            "<if test='studentNumber !=null'>" +
+            "student_number = #{studentNumber}" +
             "</if>" +
             "</set>" +
             "where id = #{id}" +

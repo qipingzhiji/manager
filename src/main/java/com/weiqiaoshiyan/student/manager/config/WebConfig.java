@@ -1,10 +1,9 @@
 package com.weiqiaoshiyan.student.manager.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -21,6 +20,11 @@ public class WebConfig implements WebMvcConfigurer{
         registry.addViewController("/success").setViewName("success");
     }
 
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+
+    }
+
     @Bean
     public WebMvcConfigurer getWebConfig(){
         return  new WebMvcConfigurer(){
@@ -31,6 +35,12 @@ public class WebConfig implements WebMvcConfigurer{
                 registry.addViewController("/index").setViewName("login");
                 registry.addViewController("/teacher/login").setViewName("/teacher/teacher_login");
                 registry.addViewController("/unAuth").setViewName("unAuth");
+                registry.addViewController("/teacher/manager").setViewName("/teacher/teacher_manager");
+
+            }
+
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
 
             }
         };
