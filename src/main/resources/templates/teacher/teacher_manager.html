@@ -6,8 +6,12 @@
     <link th:href="@{/asserts/css/jquery.dataTables.css}" rel="stylesheet">
     <link th:href="@{/asserts/css/bootstrapValidator.css}" rel="stylesheet">
     <link th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/asserts/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
     <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
     <script type="text/javascript" th:src="@{/webjars/bootstrap/3.4.1/js/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/moment.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/bootstrap-datetimepicker.min.js}" ></script>
+    <script type="text/javascript" charset="UTF-8" th:src="@{/asserts/js/bootstrap-datepicker.zh-CN.js}"></script>
     <script type="text/javascript" th:src="@{/asserts/js/bootstrapValidator.js}"></script>
     <script type="text/javascript" th:src="@{/webjars/vue/2.6.10/vue.js}"></script>
     <script type="text/javascript" th:src="@{/asserts/js/vue.resource.js}"></script>
@@ -17,6 +21,30 @@
 <div id="app" class="col-md-12" >
 <div th:replace="~{teacher/nav::topnav(activeUrl='manager')}" ></div>
     <div class="col-md-10 col-md-offset-1">
+        <div class="col-md-8 col-md-offset-2"  >
+            <form class="form-inline" role="form">
+                <div class="form-group">
+                    <label >选择班级</label>
+                    <select class="form-control" id="class_num">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>选择日期：</label>
+                    <!--指定 date标记-->
+                    <div class='input-group date' >
+                        <input type='text' id='datetimepicker1' class="form-control" />
+                        <span class="input-group-addon">
+                             <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
         <table class="table table-striped" id="student_signed_table">
             <caption class="text-center">学生签到信息</caption>
             <thead>
@@ -37,6 +65,15 @@
 
 </body>
 <script th:inline="javascript">
+
+    $(function () {
+
+        $('#datetimepicker1').datetimepicker({
+            format: 'YYYY-MM-DD hh:mm',
+            locale: moment.locale('zh-cn'),
+            //language:'zh-CN'
+        });
+    });
     var vue = new Vue({
         el:'#app',
         data:{
@@ -45,6 +82,8 @@
         methods:{
 
         },
+        beforeMount:function () {
+        },
         mounted:function () {
             $("#student_signed_table").DataTable(
                 {
@@ -52,7 +91,7 @@
                     "iDisplayLength": 10, //默认每页数量
                     //"bPaginate": true, //翻页功能
                     "bLengthChange": false, //改变每页显示数据数量
-                    "bFilter": true, //过滤功能
+                    "bFilter": false, //过滤功能
                     "bSort": true, //排序功能
                     "bInfo": true, //页脚信息
                     "bAutoWidth": true, //自动宽度
@@ -64,20 +103,6 @@
                     //"bProcessing": true
                     "jqueryui":true,
                     scrollY:true,
-                    /* "ajax": {
-                     url: "/listInfoByConditions",
-                     data:function (d) {
-                     var condition ={};
-                     var student = $("#studentId").val();
-                     condition.studentId = student;
-                     d.extra_search =condition;
-                     },
-                     dataSrc: function(result) {
-                     //这里result和上面jquery的ajax的代码类似，也是可以得到data.json的数据，但是这样的格式，Datatables不能直接使用，这时候需要在这里处理一下
-                     //直接返回Datatables需要的那部分数据即可
-                     return result;
-                     }
-                     },*/
                     'ajax':function(data, callback, settings) {
                         var param = {};
                         param.limit = data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
