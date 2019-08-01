@@ -66,7 +66,7 @@ public interface StudentMapper {
      private Course course;
      private Teacher teacher;
      */
-    @Results({
+    @Results( id = "studentDetailInfo",value = {
             @Result(id = true,column = "id",property = "id"),
             @Result(column = "class_num",property = "classNum"),
             @Result(column = "student_name",property = "studentName"),
@@ -105,4 +105,32 @@ public interface StudentMapper {
             "select distinct class_num, class_name,class_num from student_detail where teacher_id = #{teacherId} " +
             "</script>")
     List<Student> listStudentSignedDistinct(Map<String,Object> conditions);
+
+
+    @Select("<script>" +
+            "select * from student_detail" +
+            "<where>" +
+            "<if test='teacherId != null'>" +
+            "and teacher_id = #{teacherId}" +
+            "</if>" +
+            "<if test='classNum!= null'>" +
+            "and class_num = #{classNum}" +
+            "</if>" +
+            "<if test=' startTime != null and endTime != null'>" +
+            "and begin_time &gt;= #{startTime}  and begin_time &lt;= #{endTime} " +
+            "</if>" +
+            "<if test = 'startTime != null and endTime == null'>" +
+            "and begin_time &gt;= #{startTime}" +
+            "</if>" +
+            "<if test = 'startTime == null and endTime != null'>" +
+            "and begin_time &lt;= #{endTime}" +
+            "</if>" +
+            "<if test='studentName != null'>" +
+            "<bind name = 'like_studentName' value = \" '%' + studentName + '%'   \"/>" +
+            "and student_name like #{like_studentName}" +
+            "</if>" +
+            "</where>" +
+            "</script>")
+    @ResultMap(value = {"studentDetailInfo"})
+    List<Student> listStudentInfoByManage(Map<String,Object> conditions);
 }

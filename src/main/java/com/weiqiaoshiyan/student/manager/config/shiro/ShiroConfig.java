@@ -65,7 +65,7 @@ public class ShiroConfig {
         link.put("/teacher/register","anon");
         link.put("/teacher/isOnlyAccount","anon");
         link.put("/logout","logout");
-        link.put("teacher/teacherManager","authc");
+        link.put("teacher/teacherManager/**","authc");
         link.put("/**","authc");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(link);
         shiroFilterFactoryBean.setLoginUrl("/index");

@@ -21,12 +21,13 @@
 <div id="app" class="col-md-12" >
 <div th:replace="~{teacher/nav::topnav(activeUrl='manager')}" ></div>
     <div class="col-md-10 col-md-offset-1">
-        <div class="col-md-8 col-md-offset-2"  >
+        <div class="col-md-9 col-md-offset=2"  >
             <form class="form-inline" role="form">
                 <div class="form-group">
                     <label >选择班级</label>
                     <select class="form-control"  id="class_num">
-                        <option  :value="class1.id" v-for="class1 in signedClassInfo">{{class1.className}}</option>
+                        <option  selected >点击此处展开选项来选择班级</option>
+                        <option  v-bind:value="class1.classNum" v-for="class1 in signedClassInfo">{{class1.className}}</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -49,10 +50,14 @@
                         </span>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label>学生姓名</label>
+                    <input class="form-control" id="studentName" type="text">
+                </div>
             </form>
 
         </div>
-        <div class="col-md-2 col-md-pull-1">
+        <div class="col-md-1 col-md-pull-1">
             <button class="btn btn-primary" id="search" @click="searchOne()"> 点击进行搜索</button>
         </div>
         <table class="table table-striped" id="student_signed_table">
@@ -76,19 +81,47 @@
 </body>
 <script th:inline="javascript">
 
+    Date.prototype.format = function(fmt) {
+        var o = {
+            "M+" : this.getMonth()+1,                 //月份
+            "d+" : this.getDate(),                    //日
+            "h+" : this.getHours(),                   //小时
+            "m+" : this.getMinutes(),                 //分
+            "s+" : this.getSeconds(),                 //秒
+            "q+" : Math.floor((this.getMonth()+3)/3), //季度
+            "S"  : this.getMilliseconds()             //毫秒
+        };
+        if(/(y+)/.test(fmt)) {
+            fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+        }
+        for(var k in o) {
+            if(new RegExp("("+ k +")").test(fmt)){
+                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+            }
+        }
+        return fmt;
+    }
+
     $(function () {
 
         $('#datetimepicker1').datetimepicker({
-            format: 'yyyy-mm-dd hh:ii',
+            format: 'yyyy-mm-dd hh:ii:ss',
             language:'zh-CN'
         });
-        $('#datetimepicker1').datetimepicker('setDate', new Date());
+        var yestday = new Date(new Date().getTime()-1000*60*60*24);
+        yestday.setHours(0);
+        yestday.setMinutes(0);
+        yestday.setSeconds(0);
+        $('#datetimepicker1').datetimepicker('setDate', yestday);
         $('#datetimepicker2').datetimepicker({
-            format: 'yyyy-mm-dd hh:ii',
+            format: 'yyyy-mm-dd hh:ii:ss',
             language:'zh-CN'
         });
-        $('#datetimepicker2').datetimepicker('setDate', new Date());
-
+        var today = new Date(new Date().getTime()+1000*60*60*24);
+        today.setHours(0);
+        today.setMinutes(0);
+        today.setSeconds(0);
+        $('#datetimepicker2').datetimepicker('setDate', today);
         var table =  $("#student_signed_table").DataTable(
             {
                 "paging": true,
@@ -117,6 +150,7 @@
                     param.classNum = $("#class_num").val();
                     param.startTime = $("#datetimepicker1").val();
                     param.endTime = $("#datetimepicker2").val();
+                    param.studentName = $("#studentName").val();
                     if (data.order.length > 0) {
                         param.order = data.columns[data.order[0].column].data;
                         param.dir = data.order[0].dir;
@@ -176,8 +210,9 @@
             }
         );
         $('#search').on( 'click', function () {
-
+            table.data().draw();
         } );
+
     });
     var vue = new Vue({
         el:'#app',
@@ -192,6 +227,7 @@
             }
         },
         beforeMount:function () {
+
         },
         mounted:function () {
             var url = "/teacher/distinctClassInfo";

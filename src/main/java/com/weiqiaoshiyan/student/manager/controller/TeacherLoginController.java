@@ -8,6 +8,7 @@ import com.weiqiaoshiyan.student.manager.mapper.StudentMapper;
 import com.weiqiaoshiyan.student.manager.response.Message;
 import com.weiqiaoshiyan.student.manager.service.StudentService;
 import com.weiqiaoshiyan.student.manager.service.TeacherService;
+import com.weiqiaoshiyan.student.manager.utils.ParseTimeUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresGuest;
@@ -20,6 +21,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,8 +48,6 @@ public class TeacherLoginController {
             request.setAttribute("error",loginMessage.get("error"));
             return "teacher/teacher_login";
         }
-        //mv.addObject("id",loginMessage.get("id"));
-        //mv.addObject("loginUser",loginMessage.get("loginUser"));
         request.getSession().setAttribute("loginUser",(Teacher)SecurityUtils.getSubject().getPrincipal());
         return "redirect:teacherManager/"+ String.valueOf(loginMessage.get("id"));
     }
@@ -91,12 +93,16 @@ public class TeacherLoginController {
     @ResponseBody
     @RequestMapping("listSignedStudentInfo")
     public Object studentSignedInfoByTeacherId(@RequestParam Map<String,Object> selectCondition) {
+        if("点击此处展开选项来选择班级".equals(selectCondition.get("classNum"))) {
+            selectCondition.remove("classNum");
+        }
         List<Student> students = new ArrayList<>();
+
+        selectCondition.put("startTime", ParseTimeUtils.timeMillis((String)selectCondition.get("startTime"),ParseTimeUtils.FORMATTER));
+        selectCondition.put("endTime", ParseTimeUtils.timeMillis((String)selectCondition.get("endTime"),ParseTimeUtils.FORMATTER));
         if(selectCondition != null) {
             PageHelper.startPage(Integer.valueOf( (String) selectCondition.get("page")),Integer.valueOf((String)selectCondition.get("limit")));
-            Map<String,Object> conditions = new HashMap<>();
-            conditions.put("teacherId",selectCondition.get("teacherId"));
-            students = studentLessonService.selectByCondition(conditions);
+            students = studentLessonService.listStudentInfoByManage(selectCondition);
         }
         PageInfo<Student> studentPageInfo = new PageInfo<>(students);
         return studentPageInfo;
