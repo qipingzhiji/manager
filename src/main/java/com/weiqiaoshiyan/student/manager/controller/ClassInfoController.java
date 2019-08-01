@@ -1,5 +1,6 @@
 package com.weiqiaoshiyan.student.manager.controller;
 
+import com.github.pagehelper.PageHelper;
 import com.weiqiaoshiyan.student.manager.entity.ClassInfo;
 import com.weiqiaoshiyan.student.manager.mapper.ClassInfoMapper;
 import org.springframework.beans.factory.annotation.Autowired;

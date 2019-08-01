@@ -56,6 +56,7 @@ public class ShiroConfig {
          */
         link.put("/asserts/**", "anon");
         link.put("/webjars/**","anon");
+        link.put("/error/*.html", "anon");
         link.put("/ClassInfos","anon");
         link.put("/index","anon");
         link.put("/student/login","anon");

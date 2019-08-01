@@ -46,7 +46,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="course : ${courses}">
+            <tr th:each="course : ${courses.list}">
                 <td th:text="${course.id}"></td>
                 <td th:text="${course.courseName}"></td>
                 <td th:text="${course.teacher.name}"></td>
@@ -54,26 +54,30 @@
             </tr>
             </tbody>
         </table>
-            <div class="col-md-4 col-md-offset-4">
-                <ul class="pagination">
-                    <li ><a
-                            aria-label="Previous"> <i class="fa fa-angle-left"></i>&nbsp;上一页
+        <div class="col-md-6">
+            <ul class="pagination m-b-5 pull-right">
+                <li th:if="${courses.hasPreviousPage}"><a
+                        th:href="@{'/user/touser?pageIndex='+${courses.prePage}}"
+                        aria-label="Previous"> <i class="fa fa-angle-left"></i>&nbsp;上一页
+                </a></li>
+
+                <th:block th:each="nav : ${courses.navigatepageNums}">
+                    <li th:class="${nav==courses.pageNum}?'active':''"><a
+                            th:href="@{'/courses?pageIndex='+${nav}}"
+                            th:text="${nav}"></a></li>
+                </th:block>
+
+                <th:block th:if="${courses.hasNextPage}">
+                    <li><a
+                            th:href="@{'/user/touser?pageIndex='+${courses.nextPage}}"
+                            aria-label="Next"> 下一页&nbsp;<i class="fa fa-angle-right"></i>
                     </a></li>
+                </th:block>
 
-                    <th:block >
-                        <li ><a
-                                ></a></li>
-                    </th:block>
-
-                    <th:block >
-                        <li><a
-                                > 下一页&nbsp;<i class="fa fa-angle-right"></i>
-                        </a></li>
-                    </th:block>
-
-                    <li><span ></span></li>
-                </ul>
-            </div>
+                <li><span th:text="'共'+${courses.pages}+'页'"></span></li>
+            </ul>
+        </div>
+    </div>
     </div>
 </div>
 </body>
