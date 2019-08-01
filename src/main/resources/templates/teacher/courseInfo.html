@@ -17,8 +17,26 @@
 <div class="col-md-12">
     <div th:replace="~{teacher/nav :: topnav(activeUrl='courseInfo')}"></div>
     <div class="col-md-10 col-md-offset-1">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="form-group">
+            <form class="form-inline" th:action="@{/courses}">
+                <div class="form-group">
+                    <label>课程名</label>
+                    <input name="courseName" class="form-control"  id="courseName" type="text"
+                           placeholder="请输入课程名..." />
+                </div>
+                <div class="form-group">
+                    <label>任课教师</label>
+                    <input name="teacherName" class="form-control"  id="teacherName" type="text"
+                           placeholder="请输入教师名" />
+
+                </div>
+                <input type="submit" value="查询" />
+            </form>
+            </div>
+        </div>
         <table class="table">
-            <caption>基本的表格布局</caption>
+            <caption class="text-center">课程信息管理</caption>
             <thead>
             <tr>
                 <th>id</th>
@@ -36,6 +54,26 @@
             </tr>
             </tbody>
         </table>
+            <div class="col-md-4 col-md-offset-4">
+                <ul class="pagination">
+                    <li ><a
+                            aria-label="Previous"> <i class="fa fa-angle-left"></i>&nbsp;上一页
+                    </a></li>
+
+                    <th:block >
+                        <li ><a
+                                ></a></li>
+                    </th:block>
+
+                    <th:block >
+                        <li><a
+                                > 下一页&nbsp;<i class="fa fa-angle-right"></i>
+                        </a></li>
+                    </th:block>
+
+                    <li><span ></span></li>
+                </ul>
+            </div>
     </div>
 </div>
 </body>

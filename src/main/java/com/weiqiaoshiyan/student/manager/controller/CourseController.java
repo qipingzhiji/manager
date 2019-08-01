@@ -5,10 +5,7 @@ import com.weiqiaoshiyan.student.manager.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +24,8 @@ public class CourseController {
     }
 
     @GetMapping("courses")
-    public  Object courseInfo(Model model) {
-        List<Course> courses = courseService.selectCourseInfo(new HashMap<String, Object>());
+    public  Object courseInfo(@RequestParam Map<String,Object> conditions,Model model) {
+        List<Course> courses = courseService.selectCourseInfo(conditions);
         model.addAttribute("courses",courses);
         return "teacher/courseInfo";
     }

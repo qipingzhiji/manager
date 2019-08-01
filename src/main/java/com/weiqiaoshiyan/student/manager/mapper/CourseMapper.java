@@ -23,6 +23,10 @@ public interface CourseMapper {
             "<bind name='courseNameLike' value=\"'%' + courseName +'%'\" />" +
             "and course_name like #{courseNameLike}" +
             "</if>" +
+            "<if test = 'teacherName != null'>" +
+            "<bind name = 'like_teacherName' value=\" '%'+ teacherName + '%' \" />" +
+            "and teacher_name like #{like_teacherName}" +
+            "</if>" +
             "<if test='teacherId!=null'>" +
             "and teacher_id = #{teacherId}" +
             "</if>" +
