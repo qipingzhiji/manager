@@ -61,6 +61,12 @@ public class TeacherLoginController {
     }
 
     @ResponseBody
+    @RequestMapping("/distinctClassInfo")
+    public Object allSignedClassInfoDistinct(@RequestBody Map<String,Object> conditions){
+        return studentLessonService.listStudentSignedDistinct(conditions);
+    }
+
+    @ResponseBody
     @RequestMapping("isOnlyAccount")
     public Object isOnlyAccount(@RequestParam Map<String,Object> user){
         Boolean flag= (Boolean)teacherService.isOnlyAccount(user);

@@ -148,7 +148,7 @@
         </div>
 
     </div>
-<script>
+<script th:inline="javascript">
     $(document).ready(function() {
         $("#signedForm").bootstrapValidator({
             feedbackIcons: {
@@ -240,6 +240,7 @@
                 $.each(t, function() {
                     d[this.name] = this.value;
                 });
+                d.className = /*[[${loginStudent.classInfo.className}]]*/;
                 var url="/student/signed";
                 this.$http.post(url,d,{emulateJSON:true}).then(function (res) {
                     if(res.data == true) {

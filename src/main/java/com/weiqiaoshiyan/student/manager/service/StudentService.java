@@ -33,4 +33,8 @@ public class StudentService {
     public boolean update(Student student) {
         return  studentMapper.update(student) > 0;
     }
+    public List<Student> studentDistinct(Map<String,Object> conditions) {
+        return studentMapper.listStudentSignedDistinct(conditions);
+    }
+
 }

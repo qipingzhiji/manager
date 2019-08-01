@@ -2,6 +2,7 @@ package com.weiqiaoshiyan.student.manager.service;
 
 import com.weiqiaoshiyan.student.manager.config.shiro.StudentAndTeacherUsernamePasswordToken;
 import com.weiqiaoshiyan.student.manager.constant.LoginType;
+import com.weiqiaoshiyan.student.manager.entity.Student;
 import com.weiqiaoshiyan.student.manager.entity.StudentInfo;
 import com.weiqiaoshiyan.student.manager.mapper.StudentInfoMapper;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -57,6 +58,7 @@ public class StudentInfoService {
     public boolean updateStudentInfo(StudentInfo studentInfo) {
         return dao.update(studentInfo) > 0;
     }
+
 
     /**
      * 进行登录认证

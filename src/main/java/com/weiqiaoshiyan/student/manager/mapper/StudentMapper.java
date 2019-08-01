@@ -4,13 +4,14 @@ import com.weiqiaoshiyan.student.manager.entity.Student;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 
 @Mapper
 @Repository
 public interface StudentMapper {
-    @Insert("insert into student_detail(class_num, student_name, begin_time,course_id,student_id,teacher_id) values(#{classNum},#{studentName},#{beginTime},#{courseId},#{studentId},#{teacherId})")
+    @Insert("insert into student_detail(class_num, student_name, begin_time,course_id,student_id,teacher_id,class_name) values(#{classNum},#{studentName},#{beginTime},#{courseId},#{studentId},#{teacherId},#{className})")
     int insert(Student student);
 
     @Select("select * from student_detail")
@@ -98,4 +99,10 @@ public interface StudentMapper {
             "where id = #{id}" +
             "</script>")
     int update(Student student);
+
+
+    @Select("<script>" +
+            "select distinct class_num, class_name,class_num from student_detail where teacher_id = #{teacherId} " +
+            "</script>")
+    List<Student> listStudentSignedDistinct(Map<String,Object> conditions);
 }

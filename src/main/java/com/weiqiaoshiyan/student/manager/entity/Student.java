@@ -16,4 +16,5 @@ public class Student {
     private Course course;
     private Teacher teacher;
     private ClassInfo classInfo;
+    private String className;
 }
