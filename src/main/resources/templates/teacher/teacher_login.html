@@ -270,7 +270,7 @@
                     teacherPassword:this.teacherPassword
 
                 }
-                $("#registerForm1").data('bootstrapValidator').validate();;
+                $("#registerForm1").data('bootstrapValidator').validate();
                 var valid = $("#registerForm1").data('bootstrapValidator').isValid();
                 if(valid){
                     this.$http.post(url,data,{emulateJSON:true}).then(function (res) {

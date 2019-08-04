@@ -57,14 +57,15 @@
                 <td th:text="${course.courseName}"></td>
                 <td th:text="${course.teacher.name}"></td>
                 <td th:text="${course.courseTime}"></td>
-                <td><button th:id="${course.id}"  class="btn btn-primary btn-sm " data-toggle="modal"    >课程信息修改</button></td>
+                <td><button th:id="${course.id}"  class="btn btn-primary btn-sm "  onclick="updateCourseInfo(this)"     >课程信息修改</button> </td>
+                <td><button class="btn btn-primary btn-sm " onclick="deleteCourse(this)"    >删除</button></td>
             </tr>
             </tbody>
         </table>
         <div class="col-md-6">
             <ul class="pagination m-b-5 pull-right">
                 <li th:if="${courses.hasPreviousPage}"><a
-                        th:href="@{'/user/touser?pageIndex='+${courses.prePage}}"
+                        th:href="@{'/courses?pageIndex='+${courses.prePage}}"
                         aria-label="Previous"> <i class="fa fa-angle-left"></i>&nbsp;上一页
                 </a></li>
 
@@ -76,7 +77,7 @@
 
                 <th:block th:if="${courses.hasNextPage}">
                     <li><a
-                            th:href="@{'/user/touser?pageIndex='+${courses.nextPage}}"
+                            th:href="@{'/courses?pageIndex='+${courses.nextPage}}"
                             aria-label="Next"> 下一页&nbsp;<i class="fa fa-angle-right"></i>
                     </a></li>
                 </th:block>
@@ -118,11 +119,13 @@
                         <label for="courseTime">课程时长</label>
                         <input type="text" class="form-control"  id="courseTime" name="courseTime" placeholder="请输入时长,单位为分钟">
                     </div>
+                    <button type="submit" class="btn btn-primary " id="submitInfo_button" >提交更改</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary " id="submitInfo_button"  onclick="updateInfo()">提交更改</button>
+                <!--<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary " id="submitInfo_button"  onclick="updateInfo()">提交更改</button>-->
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
@@ -131,21 +134,25 @@
 </body>
 <script th:inline="javascript">
     $(function(){
-        $("table tr").find('td:last').click(function(){
-            var id = $(this).parents("tr").find('td:eq(0)').text();
-            var course_name = $(this).parents("tr").find('td:eq(1)').text();
-            var teacher_name = $(this).parents("tr").find('td:eq(2)').text();
-            var course_time = $(this).parents("tr").find('td:eq(3)').text();
-            $("#_method").val("put")
-            $("#courseName_update").val(course_name);
-            $("#teacherName_update").val(teacher_name);
-            $("#courseTime").val(course_time);
-            $("#courserId_update").val(id);
-            $("#teacherInfoUpdateForm").modal('show');
-        });
-        /*$("#courseInfo1").bootstrapValidator({
+//        $("table tr").find('td:eq(4)').click(function(){
+//            var id = $(this).parents("tr").find('td:eq(0)').text();
+//            var course_name = $(this).parents("tr").find('td:eq(1)').text();
+//            var teacher_name = $(this).parents("tr").find('td:eq(2)').text();
+//            var course_time = $(this).parents("tr").find('td:eq(3)').text();
+//            $("#_method").val("put")
+//            $("#courseName_update").val(course_name);
+//            $("#teacherName_update").val(teacher_name);
+//            $("#courseTime").val(course_time);
+//            $("#courserId_update").val(id);
+//            $("#teacherInfoUpdateForm").modal('show');
+//        });
+        validateCourse();
+
+    })
+    function validateCourse(){
+        $("#courseInfo1").bootstrapValidator({
             message: '不合法的字符',
-            //excluded: [':disabled', ':hidden', ':not(:visible)'],
+            excluded: [':disabled', ':hidden', ':not(:visible)'],
             feedbackIcons: {
                 valid: 'glyphicon glyphicon-ok',
                 invalid: 'glyphicon glyphicon-remove',
@@ -177,23 +184,83 @@
                     }
                 }
             }
-        });*/
-    })
-
-    function updateInfo() {
-        /*$("form.courseInfo1").bootstrapValidator();
-        $('#courseInfo1').data('bootstrapValidator').validate();
-        var valid = $("#courseInfo1").data('bootstrapValidator').isValid();
-        if(valid){
-            $("#courseInfo1").submit();
-        }*/
-        $("#courseInfo1").submit();
+        }).on('success.form.bv', function (e) {
+            e.preventDefault();
+            var form = $(e.target);
+            var _method = $("#_method").val();
+            var paramArray = form.serializeArray();
+            var jsonObj={};
+            $(paramArray).each(function(){
+                jsonObj[this.name]=this.value;
+            });
+            $.ajax({
+                type:_method,
+                url:'/course',
+                data:JSON.stringify(jsonObj),
+                dataType:'json',
+                contentType: "application/json;charset=utf-8",
+                success:function (res) {
+                  if(res.status=='success'){
+                      $("#teacherInfoUpdateForm").modal('hide');
+                      alert(res.message);
+                      window.location.reload();
+                  }else{
+                      $("#teacherInfoUpdateForm").modal('hide');
+                      alert(res.message);
+                      window.location.reload();
+                  }
+                }
+            })
+        });
     }
+    function updateCourseInfo(obj){
+        var id = $(obj).parents("tr").find('td:eq(0)').text();
+        var course_name = $(obj).parents("tr").find('td:eq(1)').text();
+        var teacher_name = $(obj).parents("tr").find('td:eq(2)').text();
+        var course_time = $(obj).parents("tr").find('td:eq(3)').text();
+        $("#_method").val("put")
+        $("#courseName_update").val(course_name);
+        $("#teacherName_update").val(teacher_name);
+        $("#courseTime").val(course_time);
+        $("#courserId_update").val(id);
+        $("#teacherInfoUpdateForm").modal('show');
+    }
+    function updateInfo() {
+        //$("#courseInfo1").bootstrapValidator();
+        //$('#courseInfo1').data('bootstrapValidator').validate();
+//        var valid = $("#courseInfo1").data('bootstrapValidator').isValid();
+//        if(valid){
+//            $("#courseInfo1").submit();
+//        }else{
+//            return;
+//        }
+        $("#submitInfo_button").on('click',function () {
+            var bootstrapValidator = $('#courseInfo1').data('bootstrapValidator');
+            //手动触发验证
+            bootstrapValidator.validate();
+            if(bootstrapValidator.isValid()) {
+                $("#courseInfo1").submit();
+            }
+        })
+
+    }
+    function deleteCourse(obj) {
+        var id = $(obj).parents("tr").find('td:eq(0)').text();
+        $.ajax({
+            type:'delete',
+            url:'/course/'+id,
+            success:function (res) {
+                if(res==true){
+                    window.location.reload();
+                }
+            }
+        });
+    }
+
 
     function addCourse() {
         $("#_method").val("post")
-        $("#courseName_update").val("");
-        $("#courseTime").val("");
+        $("#courseInfo1")[0].reset();
         $("#teacherInfoUpdateForm").modal('show');
     }
 

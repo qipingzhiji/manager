@@ -4,11 +4,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.weiqiaoshiyan.student.manager.entity.Course;
 import com.weiqiaoshiyan.student.manager.entity.Teacher;
+import com.weiqiaoshiyan.student.manager.response.Message;
 import com.weiqiaoshiyan.student.manager.service.CourseService;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -28,25 +30,56 @@ public class CourseController {
         return courses;
     }
 
+    @ResponseBody
+    @DeleteMapping("/course/{id}")
+    public Object deleteCourse(@PathVariable("id") int id){
+        Integer[] integers = new Integer[1];
+        integers[0] = id;
+        boolean b = courseService.deleteCourse(integers);
+        return b;
+    }
+
+    @ResponseBody
     @PostMapping("/course")
-    public Object courseAdd(Course course,RedirectAttributes redirectAttributes) {
+    public Object courseAdd(@RequestBody Course course,RedirectAttributes redirectAttributes) {
+        /*if(StringUtils.isEmpty(course.getCourseName())){
+            redirectAttributes.addAttribute("msg","填加的课程名称不能为空");
+            return "redirect:/courses";
+        }
+        if(StringUtils.isEmpty(course.getCourseTime())){
+            redirectAttributes.addAttribute("msg","课程时长不能为空");
+            return "redirect:/courses";
+        }
         if (courseService.insertCourse(course)) {
             redirectAttributes.addAttribute("msg","课程信息添加成功");
             return "redirect:/courses";
         }
         redirectAttributes.addAttribute("msg","课程信息添加失败");
-        return "redirect:/courses";
+        return "redirect:/courses";*/
+
+        boolean b = courseService.insertCourse(course);
+        if(b){
+            return new Message("success","填加信息成功");
+        }else {
+            return new Message("failed","填加信息失败");
+        }
     }
 
+    @ResponseBody
     @PutMapping("/course")
-    public Object course_update(Course  course, RedirectAttributes redirectAttributes) {
-        if(courseService.updateCourse(course)){
+    public Object course_update(@RequestBody Course  course, RedirectAttributes redirectAttributes) {
+        /*if(courseService.updateCourse(course)){
             redirectAttributes.addAttribute("msg","课程信息更新成功");
             return "redirect:/courses";
         }
         redirectAttributes.addAttribute("msg","课程信息更新失败");
-        return "redirect:/courses";
-
+        return "redirect:/courses";*/
+        boolean b = courseService.updateCourse(course);
+        if(b){
+            return new Message("success","更新信息成功");
+        }else {
+            return new Message("failed","更新信息失败");
+        }
     }
 
     @GetMapping("courses")
