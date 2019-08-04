@@ -21,7 +21,7 @@
     </div>
 
     <div class="col-md-4 col-md-offset-4 form-group" style="position: relative;top:100px;">
-    <div  id="registerForm"  >
+    <form  id="registerForm"  method="post" action="/teacher/loginIn" >
         <input type="hidden" name="method" value="register"/>
         <div class="form-group">
             <p class="tooltip-success" data-toggle="tooltip"  title="注册成功，请登录来使用本系统"></p>
@@ -30,19 +30,20 @@
             <!--<p v-bind:class="errorClass" v-bind:style="{display:isDispaly}" > {{error}}</p>-->
             <p style="color:red" th:text="${error}" th:if="${not #strings.isEmpty(error)}">1</p>
             <label>教师登录帐号名</label>
-            <input type="text" v-model="account" class="form-control"  name="userName" placeholder="请输入你的帐号名" />
+            <input type="text" v-model="account" class="form-control"  name="account" placeholder="请输入你的帐号名" />
             <input type="hidden" id="other">
         </div>
         <div class="form-group">
             <label>登录密码</label>
-            <input type="password" v-model="password" class="form-control"  name="userPassword" placeholder="密码由6-10位字母数字组成" />
+            <input type="password" v-model="password" class="form-control"  name="password" placeholder="密码由6-10位字母数字组成" />
         </div>
         <div class="form-group text-center">
-            <button type="button" v-on:click="login_in()" class="btn btn-primary ">登录</button>
-            <button type="button" data-toggle="modal" data-target="#registerFormModal" class="btn btn-primary" >注册</button>
+            <!--<button type="button" v-on:click="login_in()" class="btn btn-primary ">登录</button>-->
+            <button type="submit" id="loginButton" class="btn btn-primary ">登录</button>
+            <button type="button" data-toggle="modal"  onclick="registerTeacherAccount()" class="btn btn-primary" >注册</button>
             <input type="reset" class="btn btn-primary" v-on:click="reset()" value="重置"><br>
         </div>
-    </div>
+    </form>
     </div>
     <div class="modal fade"  role="dialog" tabindex="-1" aria-labelledby="myModalLabel" id="registerFormModal">
         <div class="modal-dialog">
@@ -54,7 +55,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <div role="form" id = "registerForm1">
+                        <form role="form" id = "registerForm1">
                             <div class="form-group">
                                 <label for="teacher_account">帐号</label>
                                 <input type="text" class="form-control" id="teacher_account"  v-model="teacherAccount" name="teacherAccount" placeholder="帐号不允许重复">
@@ -71,7 +72,7 @@
                                 <label for="teacher_configured_password">确认密码</label>
                                 <input type="password" class="form-control" id="teacher_configured_password" name="teacherConfiguredPassword">
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -89,7 +90,127 @@
 </div>
 </body>
 <script type="text/javascript">
+    $(document).keypress(
+        function(event){
+            if (event.which == '13') {
+                event.preventDefault();
+            }
+        });
+    function registerTeacherAccount() {
+        $("#registerForm1")[0].reset();
+        $("#registerForm1").data('bootstrapValidator').destroy();
+        $('#registerForm1').data('bootstrapValidator',null);
+        registerForm1Validate($('#registerForm1'));
+       $("#registerFormModal").modal('show');
+    }
+    function registerForm1Validate(fm) {
+        fm.bootstrapValidator({
+            message:'这个值是无效的',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields:{
+                teacherAccount:{
+                    message: '这个值是无效的',
+                    validators:{
+                        notEmpty:{
+                            message:'请输入帐号名称'
+                        },
+                        stringLength: {
+                            min: 6,
+                            max: 30,
+                            message: '长度必须在6到30之间'
+                        },regexp: {
+                            regexp: /^[a-zA-Z0-9_\.]+$/,
+                            message: '必须是数字或字母'
+                        },remote: {
+                            type: 'POST',
+                            url: '/teacher/isOnlyAccount',
+                            message: '该帐号已经被使用了,请更换一个继续完成注册',
+                            delay: 2000
+                        },different: {
+                            field: 'teacherPassword',
+                            message: '登录帐号和密码不能一样'
+                        }
+                    }
+                },
+                teacherName:{
+                    message: '这个值是无效的',
+                    validators:{
+                        stringLength: {
+                            min: 2,
+                            max: 4,
+                            message: '必须输入2个到四个中文字符'
+                        },
+                        regexp: {
+                            regexp: /^[\u4E00-\u9FA5_\.]+$/,
+                            message: '只能输入汉字'
+                        }
+                    }
 
+                },
+                teacherPassword:{
+                    validators:{
+                        notEmpty: {
+                            message: '密码不能为空'
+                        },
+                        identical: {
+                            field: 'teacherConfiguredPassword',
+                            message: '两次输入的密码不同'
+                        }
+                    }
+                },
+                teacherConfiguredPassword:{
+                    validators: {
+                        notEmpty: {
+                            message: '密码不能为空'
+                        },
+                        identical: {
+                            field: 'teacherPassword',
+                            message: '两次输入的密码不同'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    $(function () {
+
+        $("#registerForm").bootstrapValidator({
+            message:'这个值是无效的',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            submitButtons:'#loginButton',
+            fields:{
+                account:{
+                    message:'请输入你的登录帐号',
+                    validators:{
+                        notEmpty: {
+                            message: '请输入帐号名称'
+                        },
+                        regexp: {
+                            regexp: /^[a-zA-Z0-9_\.]+$/,
+                            message: '必须是数字或字母'
+                        }
+                    }
+                },
+                password:{
+                    validators:{
+                        notEmpty: {
+                            message: '请输入登录密码'
+                        }
+                    }
+                }
+            }
+
+        });
+        registerForm1Validate($("#registerForm1"));
+    });
     var vue = new Vue({
         el:"#app",
         data:{
@@ -103,10 +224,10 @@
             teacherPassword:''
         },
         methods:{
-            login_in:function () {
+            /*login_in:function () {
                 var valid = $("#registerForm").data("bootstrapValidator").isValid();
                 if(valid){
-                    /*var url = "/teacher/loginIn";
+                    /!*var url = "/teacher/loginIn";
                     var data={
                         "account": this.account,
                         "password": this.password
@@ -125,7 +246,7 @@
                         }
                     },function (res) {
 
-                    });*/
+                    });*!/
                     $("#temp_form").attr("action","/teacher/loginIn");
                     $("#temp_form").attr("method","post");
                     $("#temp_form").submit();
@@ -136,7 +257,7 @@
                     },3000);
                 }
 
-            },
+            },*/
             registerTeacher:function () {
                 var url = "/teacher/register";
                 /*var data = $("#registerForm1").serializeArray().reduce(function(result, item){
@@ -149,15 +270,10 @@
                     teacherPassword:this.teacherPassword
 
                 }
-                this.$http.post(url,data,{emulateJSON:true}).then(function (res) {
-                    var valid = $("#registerForm1").data('bootstrapValidator').isValid();
-                        if(!$("#registerForm1").data('bootstrapValidator').isValid()){
-                            $(".tooltip-isvalided").tooltip("show");
-                            setInterval( function () {
-                                $(".tooltip-isvalided").tooltip('hide')
-                            },3000);
-                            return;
-                        }else{
+                $("#registerForm1").data('bootstrapValidator').validate();;
+                var valid = $("#registerForm1").data('bootstrapValidator').isValid();
+                if(valid){
+                    this.$http.post(url,data,{emulateJSON:true}).then(function (res) {
                             if(res.data.status =="success"){
 
                                 $("#registerFormModal").modal("hide");
@@ -172,11 +288,16 @@
                                     $(".tooltip-failed").tooltip('hide')
                                 },3000);
                             }
-                        }
+                    },function (res) {
 
-                },function (res) {
+                    });
+                }else {
+//                    $(".tooltip-isvalided").tooltip("show");
+//                    setInterval( function () {
+//                        $(".tooltip-isvalided").tooltip('hide')
+//                    },3000);
+                }
 
-                });
             },
             reset:function () {
                 this.account ="";
@@ -184,7 +305,7 @@
             }
        },
         mounted:function () {
-            $("#registerForm").bootstrapValidator({
+            /*$("#registerForm").bootstrapValidator({
                 message:'这个值是无效的',
                 feedbackIcons: {
                     valid: 'glyphicon glyphicon-ok',
@@ -284,7 +405,7 @@
                         }
                     }
                 }
-            });
+            });*/
         }
     });
 </script>
