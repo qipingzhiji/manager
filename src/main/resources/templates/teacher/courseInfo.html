@@ -14,15 +14,17 @@
     <script type="text/javascript" th:src="@{/asserts/js/jquery.dataTables.js}"></script>
 </head>
 <body>
+<div id = "app">
 <div class="col-md-12">
     <div th:replace="~{teacher/nav :: topnav(activeUrl='courseInfo')}"></div>
+    <p style="color: red" class="text-center" th:text="${msg}" th:if="${!#strings.isEmpty(msg)}"></p>
     <div class="col-md-10 col-md-offset-1">
         <div class="col-md-6 col-md-offset-3">
-            <div class="form-group">
+            <div class="form-group col-md-10">
             <form class="form-inline" th:action="@{/courses}">
                 <div class="form-group">
                     <label>课程名</label>
-                    <input name="courseName" class="form-control"  id="courseName" type="text"
+                    <input name="courseName1" class="form-control"  id="courseName" type="text"
                            placeholder="请输入课程名..." />
                 </div>
                 <div class="form-group">
@@ -31,12 +33,16 @@
                            placeholder="请输入教师名" />
 
                 </div>
-                <input type="submit" value="查询" />
+                <button class="btn  btn-primary"  type="submit" >查询</button>
             </form>
+            </div>
+            <div class="col-md-2">
+            <button class="btn btn-primary"  onclick="addCourse()">添加课程信息</button>
             </div>
         </div>
         <table class="table">
             <caption class="text-center">课程信息管理</caption>
+
             <thead>
             <tr>
                 <th>id</th>
@@ -51,6 +57,7 @@
                 <td th:text="${course.courseName}"></td>
                 <td th:text="${course.teacher.name}"></td>
                 <td th:text="${course.courseTime}"></td>
+                <td><button th:id="${course.id}"  class="btn btn-primary btn-sm " data-toggle="modal"    >课程信息修改</button></td>
             </tr>
             </tbody>
         </table>
@@ -80,5 +87,115 @@
     </div>
     </div>
 </div>
+<div class="modal fade" id="teacherInfoUpdateForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title text-center" id="myModalLabel" >课程信息管理</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" id="courseInfo1" action="/course" method="post">
+                    <input id="_method" type="hidden" name="_method" value="put">
+                    <input type="hidden" name="id" id="courserId_update">
+                    <div class="form-group">
+                        <label for="courseName_update">课程名称</label>
+                        <input type="text"  class="form-control" id="courseName_update" name="courseName" placeholder="请输入名称">
+                    </div>
+                   <!-- <div class="form-group">
+                        <label for="teacherName">任课老师名称</label>
+                        <input type="text" class="form-control" id="teacherName_update" name="teacherName" placeholder="请输入名称">
+                    </div>-->
+                    <div class="form-group" style="display: none">
+                        <label for="teacherId">任课教师ID</label>
+                        <input type="text" class="form-control" id="teacherId" th:value="${session.loginUser.id}" name="teacherId" placeholder="请输入时长,单位为分钟">
+                    </div>
+                    <div class="form-group" style="display: none">
+                        <label for="teacherName_update">任课教师</label>
+                        <input type="text" class="form-control" th:value="${session.loginUser.name}" id="teacherName_update" name="teacherName" placeholder="请输入时长,单位为分钟">
+                    </div>
+                    <div class="form-group">
+                        <label for="courseTime">课程时长</label>
+                        <input type="text" class="form-control"  id="courseTime" name="courseTime" placeholder="请输入时长,单位为分钟">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary " id="submitInfo_button"  onclick="updateInfo()">提交更改</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</div>
 </body>
+<script th:inline="javascript">
+    $(function(){
+        $("table tr").find('td:last').click(function(){
+            var id = $(this).parents("tr").find('td:eq(0)').text();
+            var course_name = $(this).parents("tr").find('td:eq(1)').text();
+            var teacher_name = $(this).parents("tr").find('td:eq(2)').text();
+            var course_time = $(this).parents("tr").find('td:eq(3)').text();
+            $("#_method").val("put")
+            $("#courseName_update").val(course_name);
+            $("#teacherName_update").val(teacher_name);
+            $("#courseTime").val(course_time);
+            $("#courserId_update").val(id);
+            $("#teacherInfoUpdateForm").modal('show');
+        });
+        /*$("#courseInfo1").bootstrapValidator({
+            message: '不合法的字符',
+            //excluded: [':disabled', ':hidden', ':not(:visible)'],
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields:{
+                courseName: {
+                    message: '课程名称不能为空',
+                    validators: {
+                        notEmpty: {
+                            message: '课程名称不能为空'
+                        },
+                        stringLength: {
+                            min: 2,
+                            max: 30,
+                            message: '课程名称最少输入两个字符'
+                        }
+                    }
+                },
+                courseTime:{
+                    validators: {
+                        notEmpty: {
+                            message: '课程时长不能为空'
+                        },
+                        regexp: {
+                            regexp: /^[0-9_\.]+$/,
+                            message: '课程时长只能输入数字'
+                        }
+                    }
+                }
+            }
+        });*/
+    })
+
+    function updateInfo() {
+        /*$("form.courseInfo1").bootstrapValidator();
+        $('#courseInfo1').data('bootstrapValidator').validate();
+        var valid = $("#courseInfo1").data('bootstrapValidator').isValid();
+        if(valid){
+            $("#courseInfo1").submit();
+        }*/
+        $("#courseInfo1").submit();
+    }
+
+    function addCourse() {
+        $("#_method").val("post")
+        $("#courseName_update").val("");
+        $("#courseTime").val("");
+        $("#teacherInfoUpdateForm").modal('show');
+    }
+
+</script>
 </html>

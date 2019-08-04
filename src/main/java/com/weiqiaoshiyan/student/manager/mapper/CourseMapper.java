@@ -52,7 +52,7 @@ public interface CourseMapper {
     List<Course> selectCourse(Map<String,Object> conditons);
 
 
-    @Insert("insert into course(course_name,teacher_id) values(#{courseName},#{teacherId})")
+    @Insert("insert into course(course_name,teacher_id,course_time,teacher_name) values(#{courseName},#{teacherId},#{courseTime},#{teacherName})")
     int insertCourse(Course course);
 
     @Delete("<script>" +
@@ -67,10 +67,13 @@ public interface CourseMapper {
             "update course " +
             "<set>" +
             "<if test= 'courseName !=null'>" +
-            "course_name = #{courseName}" +
+            "course_name = #{courseName}," +
             "</if>" +
             "<if test='teacherId != null'>" +
-            "teacher_id =#{teacherId}" +
+            "teacher_id =#{teacherId}," +
+            "</if>" +
+            "<if test='courseTime!=null'>" +
+            "course_time = #{courseTime}," +
             "</if>" +
             "</set>" +
             "where id = #{id}" +

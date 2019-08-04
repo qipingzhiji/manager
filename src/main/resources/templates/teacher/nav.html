@@ -15,7 +15,8 @@
                 <li class="" th:class="${activeUrl=='manager'?'active':''}"><a href="#" th:href="@{'/teacher/teacherManager/' + ${session.loginUser.id}}">首页</a></li>
                 <li class="" th:class="${activeUrl=='classInfo'?'active':''}"><a href="#"  th:href="@{/classInfo}">班级管理</a></li>
                 <li class="" th:class="${activeUrl=='studentInfo'?'active':''}"><a href="#"  th:href="@{/studentPage}">学生管理</a></li>
-                <li class="" th:class="${activeUrl=='courseInfo'?'active':''}" ><a href="#" th:href="@{/courses}">课程管理</a></li>
+                <!--<li class="" th:class="${activeUrl=='courseInfo'?'active':''}" ><a href="#" th:href="@{'/courses/'+${session.loginUser.id}}">课程管理</a></li>-->
+                <li class="" th:class="${activeUrl=='courseInfo'?'active':''}" ><a href="#" th:href="@{/courses(loginId = ${session.loginUser.id})}">课程管理</a></li>
             </ul>
         </div>
     </div>

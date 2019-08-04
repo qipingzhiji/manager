@@ -108,18 +108,18 @@
             format: 'yyyy-mm-dd hh:ii:ss',
             language:'zh-CN'
         });
-        var yestday = new Date(new Date().getTime()-1000*60*60*24);
-        yestday.setHours(0);
-        yestday.setMinutes(0);
+        var yestday = new Date();
+        yestday.setHours(8);
+        yestday.setMinutes(30);
         yestday.setSeconds(0);
         $('#datetimepicker1').datetimepicker('setDate', yestday);
         $('#datetimepicker2').datetimepicker({
             format: 'yyyy-mm-dd hh:ii:ss',
             language:'zh-CN'
         });
-        var today = new Date(new Date().getTime()+1000*60*60*24);
-        today.setHours(0);
-        today.setMinutes(0);
+        var today = new Date();
+        today.setHours(17);
+        today.setMinutes(30);
         today.setSeconds(0);
         $('#datetimepicker2').datetimepicker('setDate', today);
         var table =  $("#student_signed_table").DataTable(
