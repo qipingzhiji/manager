@@ -259,6 +259,9 @@
 
 
     function addCourse() {
+        $("#courseInfo1").data('bootstrapValidator').destroy();
+        $('#courseInfo1').data('bootstrapValidator', null);
+        validateCourse();
         $("#_method").val("post")
         $("#courseInfo1")[0].reset();
         $("#teacherInfoUpdateForm").modal('show');

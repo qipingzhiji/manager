@@ -19,28 +19,64 @@
 <body>
     <div class="col-md-12">
         <div th:replace="~{teacher/nav::topnav(activeUrl='classInfo')}" ></div>
+        <div id="toolbox" class=" col-md-3 col-md-offset-1">
+            <button class="btn" id="add_table_btn" ><span class="glyphicon glyphicon-plus"></span> 新增</button>
+            <button class="btn" id="edit_table_btn"><span class="glyphicon glyphicon-pencil"></span> 编辑</button>
+            <button class="btn" id="delete_table_btn"><span class="glyphicon glyphicon-remove"></span> 删除</button>
+        </div>
         <div class="col-md-10 col-md-offset-1">
             <table class="table" id="classInfoTable">
                 <caption class="text-center">班级信息管理</caption>
-                <thead>
-                <tr>
-                    <th>班级id</th>
-                    <th>班级名字</th>
-                    <th>班级人数</th>
-                    <th>班级备注</th>
-                </tr>
-                </thead>
-                <tbody>
-
-                </tbody>
             </table>
         </div>
 
     </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title text-center" id="myModalLabel">班级信息编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" id="classInfoForm">
+                        <input type="hidden" name="_method" value="post" id="_method" />
+                        <div class="form-group" style="display: none">
+                            <label for="class_id">班级id</label>
+                            <input type="text" class="form-control" name="id" id="class_id">
+                        </div>
+                        <div class="form-group">
+                            <label for="class_name">班级名称</label>
+                            <input type="text" class="form-control" name="className" id="class_name" placeholder="请输入名称">
+                        </div>
+                        <div class="form-group">
+                            <label for="student_number">班级人数</label>
+                            <input type="text" class="form-control" name="studentNumber" id="student_number" placeholder="请输入数字">
+                        </div>
+                        <div class="form-group">
+                            <label for="class_comment"></label>
+                            <textarea id="class_comment" class="form-control" name="classComment" rows="3"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="submit" class="btn btn-primary" >提交更改</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
 </body>
 <script th:inline="javascript">
     $(function () {
-        $('#classInfoTable').bootstrapTable({
+            //当模态框关闭时清空表单内数据
+            $('#myModal').on('hidden.bs.modal', function () {
+                $('#classInfoForm')[0].reset();
+            });
+
+            $('#classInfoTable').bootstrapTable({
             url: '/classInfos',                      //请求后台的URL（*）
             method: 'get',                      //请求方式（*）
             //toolbar: '#toolbar',              //工具按钮用哪个容器
@@ -53,7 +89,7 @@
             pageNumber: 1,                      //初始化加载第一页，默认第一页,并记录
             //pageSize: rows,                     //每页的记录行数（*）
             pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
-            search: false,                      //是否显示表格搜索
+            search: true,                      //是否显示表格搜索
             strictSearch: true,
             showColumns: true,                  //是否显示所有的列（选择显示的列）
             showRefresh: true,                  //是否显示刷新按钮
@@ -71,11 +107,13 @@
                     rows: params.limit,                         //页面大小
                     page: (params.offset / params.limit) + 1,   //页码
                     sort: params.sort,      //排序列名
-                    sortOrder: params.order //排位命令（desc，asc）
+                    sortOrder: params.order, //排位命令（desc，asc）
+                    className:params.search
                 };
                 return temp;
             },
             columns: [
+                {checkbox:true},
                 {
                     field:'id',
                     title:'班级唯一ID',
@@ -92,13 +130,13 @@
                 {
                     field:'classComment',
                     title:'班级信息备注'
-                },{
+                }/*,{
                     field:'id',
                     title:'操作',
                     align:'center',
                     valign:'middle',
                     formatter:actionFormatter
-                }
+                }*/
             ],
             onLoadSuccess: function () {
             },
@@ -114,22 +152,184 @@
                     'rows':res.list
                 }
             }
+        });
+        //阻止bootstrap的回车自动提交表单
+        $(document).keypress(
+            function(event){
+                if (event.which == '13') {
+                    event.preventDefault();
+                }
+            });
+
+        var $editbtn = $("#edit_table_btn");
+        $editbtn.click(function () {
+            $("#_method").val("put");
+            var info = $('#classInfoTable').bootstrapTable('getSelections');
+            if(info.length==0){
+                alert("请选择数据");
+            }else if(info.length>1){
+                alert("请选择一条数据编辑");
+            }else{
+                $("#classInfoForm").data('bootstrapValidator').destroy();
+                $('#classInfoForm').data('bootstrapValidator', null);
+                validate($("#classInfoForm"));
+                var classInfo = info[0];
+                $("#class_id").val(classInfo.id)
+                $('#class_name').val(classInfo.className);
+                $('#student_number').val(classInfo.studentNumber)
+                $('#class_comment').val(classInfo.classComment)
+                $("#myModal").modal("show")
+            }
+        });
+
+        var $addbtn = $("#add_table_btn");
+        $addbtn.click(function () {
+            $("#classInfoForm").data('bootstrapValidator').destroy();
+            $('#classInfoForm').data('bootstrapValidator', null);
+            validate($("#classInfoForm"));
+            $("#_method").val("post");
+            $('#classInfoForm')[0].reset();
+            $("#myModal").modal("show")
+        });
+
+        var $deletebtn=$("#delete_table_btn");
+        $deletebtn.click(function () {
+            var info = $('#classInfoTable').bootstrapTable('getSelections');
+            if(info.length==0){
+                alert("请选择数据");
+            }else{
+                var ids = new Array();
+                for(ob of info){
+                    ids.push(ob.id);
+                }
+                $.ajax({
+                    type:'delete',
+                    url:'/classInfo',
+                    data:JSON.stringify(ids),
+                    dataType:'json',
+                    contentType: "application/json;charset=utf-8",
+                    success:function (res) {
+                        if(res.status=='success'){
+                            alert(res.message);
+                            $("#myModal").modal("hide")
+                            $("#classInfoTable").bootstrapTable('refresh');
+                        }else{
+                            alert(res.message);
+                            $("#myModal").modal("hide")
+                        }
+                    }
+                })
+            }
         })
+
+        validate($("#classInfoForm"));
+
     })
+    
+    function commitClassInfo() {
+        //表单重新进行验证
+        $("#classInfoForm").data('bootstrapValidator').destroy();
+        $('#classInfoForm').data('bootstrapValidator', null);
+        validate($("#classInfoForm"));
+
+        var serializeArray = $("#classInfoForm").serializeArray();
+        var jsonObj={};
+        $(serializeArray).each(function(){
+            jsonObj[this.name]=this.value;
+        });
+        var param = JSON.stringify(jsonObj);
+        var _method = $("#_method").val();
+        $.ajax({
+            type:_method,
+            url:'/classInfo',
+            data:param,
+            dataType:'json',
+            contentType: "application/json;charset=utf-8",
+            success:function (res) {
+                if(res.status == 'success'){
+                    alert(res.message);
+                    $("#myModal").modal("hide")
+                    $("#classInfoTable").bootstrapTable('refresh');
+                }else {
+                    alert(res.message);
+                }
+            }
+        });
+    }
+    
     function actionFormatter(value, row, index) {
         var id = value;
         var result = "";
-       /* result += "<a href='javascript:;' class='btn btn-xs green' onclick=\"EditViewById('" + id + "', view='view')\" title='查看'><span class='glyphicon glyphicon-search'></span></a>";*/
+        result += "<a href='javascript:;' class='btn btn-xs green' onclick=\"EditViewById('" + id + "', view='view')\" title='查看'><span class='glyphicon glyphicon-search'></span></a>";
         result += "<a href='javascript:;' class='btn btn-xs blue' onclick=\"EditViewById('" + id + "')\" title='编辑'><span class='glyphicon glyphicon-pencil'></span></a>";
         result += "<a href='javascript:;' class='btn btn-xs red' onclick=\"DeleteByIds('" + id + "')\" title='删除'><span class='glyphicon glyphicon-remove'></span></a>";
         return result;
     }
 
-    function EditViewById (id) {
-        alert(id)
+    function validate(fm){
+        fm.bootstrapValidator({
+            message:'这个值是无效的',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields:{
+                className:{
+                    message: '这个值是无效的',
+                    validators:{
+                        notEmpty:{
+                            message:'请输入帐号名称'
+                        },
+                        stringLength: {
+                            min: 2,
+                            max: 30,
+                            message: '长度必须在6到30之间'
+                        }
+                    }
+                },
+                studentNumber:{
+                    message: '这个值是无效的',
+                    validators:{
+                        notEmpty:{
+                            message:'请输入帐号名称'
+                        },
+                        regexp: {
+                            regexp: /^[0-9_\.]+$/,
+                            message: '班级人数只能输入数字'
+                        }
+                    }
+
+                }
+            }
+        }).on('success.form.bv', function (e) {
+            e.preventDefault();
+            var form = $(e.target);
+            var _method = $("#_method").val();
+            var paramArray = form.serializeArray();
+            var jsonObj={};
+            $(paramArray).each(function(){
+                jsonObj[this.name]=this.value;
+            });
+            $.ajax({
+                type:_method,
+                url:'/classInfo',
+                data:JSON.stringify(jsonObj),
+                dataType:'json',
+                contentType: "application/json;charset=utf-8",
+                success:function (res) {
+                    if(res.status=='success'){
+                        alert(res.message);
+                        $("#myModal").modal("hide")
+                        $("#classInfoTable").bootstrapTable('refresh');
+                    }else{
+                        alert(res.message);
+                        $("#myModal").modal("hide")
+                    }
+                }
+            })
+        });;
     }
-    function DeleteByIds(id) {
-        alert(id)
-    }
+
 </script>
 </html>
