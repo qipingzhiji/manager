@@ -8,7 +8,7 @@
 <nav class="navbar navbar-inverse" role="navigation" th:fragment="topnav(activeUrl)" >
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">当前登录用户:[[${session.loginUser.name}]]</a>
+            <a class="navbar-brand" data-toggle="modal" data-target="#teacherInfo">当前登录用户:[[${session.loginUser.name}]]</a>
         </div>
         <div>
             <ul class="nav navbar-nav">
@@ -17,6 +17,8 @@
                 <li class="" th:class="${activeUrl=='studentInfo'?'active':''}"><a href="#"  th:href="@{/studentPage}">学生管理</a></li>
                 <!--<li class="" th:class="${activeUrl=='courseInfo'?'active':''}" ><a href="#" th:href="@{'/courses/'+${session.loginUser.id}}">课程管理</a></li>-->
                 <li class="" th:class="${activeUrl=='courseInfo'?'active':''}" ><a href="#" th:href="@{/courses(loginId = ${session.loginUser.id})}">课程管理</a></li>
+                <li class="" th:class="${activeUrl=='teacherInfo'?'active':''}" ><a href="#" th:href="@{/teacher/teacherInfo}">个人信息维护</a></li>
+                <li ><a href="#" th:href="@{/teacher/login}">退出登录</a></li>
             </ul>
         </div>
     </div>

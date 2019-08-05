@@ -12,8 +12,12 @@ import com.weiqiaoshiyan.student.manager.utils.ParseTimeUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresGuest;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -40,6 +44,11 @@ public class TeacherLoginController {
 
     @Autowired
     private StudentMapper studentLessonService;
+
+    @Value("${mysharo.hashIterations}")
+    private int hashIterations;
+    @Value("${mysharo.hashAlgorithmName}")
+    private String hashAlgorithmName;
 
     @RequestMapping("loginIn")
     public Object login(Teacher teacher, HttpServletRequest request){
@@ -71,13 +80,24 @@ public class TeacherLoginController {
     @ResponseBody
     @RequestMapping("isOnlyAccount")
     public Object isOnlyAccount(@RequestParam Map<String,Object> user){
-        Boolean flag= (Boolean)teacherService.isOnlyAccount(user);
+        if(!StringUtils.isEmpty(user.get("id"))){
+            user.remove("id");
+            Integer onlyAccount = teacherService.isOnlyAccount(user);
+            if(onlyAccount == 1) {
+                user.put("valid",true);
+                return  user;
+            } else {
+                user.put("valid",false);
+                return user;
+            }
+        }
+        Integer onlyAccount = teacherService.isOnlyAccount(user);
         user.clear();
-        if(flag){
-            user.put("valid",flag);
+        if(onlyAccount==0){
+            user.put("valid",true);
             return  user;
         }else {
-            user.put("valid",flag);
+            user.put("valid",false);
             return user;
         }
     }
@@ -100,11 +120,55 @@ public class TeacherLoginController {
 
         selectCondition.put("startTime", ParseTimeUtils.timeMillis((String)selectCondition.get("startTime"),ParseTimeUtils.FORMATTER));
         selectCondition.put("endTime", ParseTimeUtils.timeMillis((String)selectCondition.get("endTime"),ParseTimeUtils.FORMATTER));
+        if(StringUtils.isEmpty(selectCondition.get("studentName"))){
+            selectCondition.remove("studentName");
+        }
         if(selectCondition != null) {
             PageHelper.startPage(Integer.valueOf( (String) selectCondition.get("page")),Integer.valueOf((String)selectCondition.get("limit")));
             students = studentLessonService.listStudentInfoByManage(selectCondition);
         }
         PageInfo<Student> studentPageInfo = new PageInfo<>(students);
         return studentPageInfo;
+    }
+
+
+    @GetMapping("teacherInfo")
+    public Object teacherInfo(){
+        return "teacher/teacherInfo";
+    }
+
+    @ResponseBody
+    @PutMapping("teacherInfo")
+    public Object updateTeacherInfo(@RequestBody  Teacher teacher,HttpServletRequest request) {
+        if(!StringUtils.isEmpty(teacher.getPassword())){
+            Map<String, Object> stringObjectMap = new HashMap<>();
+            stringObjectMap.put("id",teacher.getId());
+            List<Teacher> teachers = teacherService.getTeachers(stringObjectMap);
+            Teacher teacher_old = teachers.get(0);
+            String salt = teacher_old.getSalt();
+            teacher.setPassword(new SimpleHash(hashAlgorithmName,teacher.getPassword(),salt,hashIterations).toString());
+        }
+        if(teacherService.updateTeacher(teacher)){
+            Map<String, Object> stringObjectMap = new HashMap<>();
+            stringObjectMap.put("id",teacher.getId());
+            Teacher teacher_new = teacherService.getTeachers(stringObjectMap).get(0);
+            //删除session中的旧的信息
+            request.getSession().removeAttribute("loginUser");
+            //更新shiro认证的信息
+            Subject subject = SecurityUtils.getSubject();
+            PrincipalCollection previousPrincipals = subject.getPreviousPrincipals();
+            String realmName = "";
+            if(previousPrincipals !=null){
+                realmName = previousPrincipals.getRealmNames().iterator().next();
+            }
+            realmName = subject.getPrincipals().getRealmNames().iterator().next();
+            SimplePrincipalCollection simplePrincipalCollection = new SimplePrincipalCollection(teacher_new,realmName);
+            subject.runAs(simplePrincipalCollection);
+            //更新session中的loginUser信息
+            request.getSession().setAttribute("loginUser",teacher_new);
+            return new Message("success","教师信息更新成功");
+        }else {
+            return new Message("success","教师信息更新失败");
+        }
     }
 }

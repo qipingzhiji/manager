@@ -19,6 +19,33 @@
 <body>
     <div class="col-md-12" id="app">
         <div th:replace="~{teacher/nav::topnav(activeUrl='studentInfo')}" ></div>
+
+        <div class="col-md-10 col-md-offset-1 form-group">
+            <div id="toolbox" class=" col-md-3 col-md-offset-1">
+                <button class="btn" id="add_table_btn" ><span class="glyphicon glyphicon-plus"></span> 新增</button>
+                <button class="btn" id="edit_table_btn"><span class="glyphicon glyphicon-pencil"></span> 编辑</button>
+                <button class="btn" id="delete_table_btn"><span class="glyphicon glyphicon-remove"></span> 删除</button>
+            </div>
+            <form class="form-inline" role="form">
+                <div class="form-group">
+                    <label>学生姓名</label>
+                    <input class="form-control" id="student_select_name" type="text">
+                </div>
+                <div class="form-group">
+                    <label >选择班级</label>
+                    <select class="form-control"  id="class_select_id">
+                        <option  selected >点击此处展开选项来选择班级</option>
+                        <option th:each="classInfoOne:${classInfos}" th:value="${classInfoOne.id}" th:text="${classInfoOne.className}"></option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
+                    <span class="glyphicon glyphicon-search"></span> 搜索
+                </button>
+                <button type="button" class="btn btn-primary btn-w-m" id="resetQuery">
+                    <span class="glyphicon glyphicon-unchecked"></span>重置
+                </button>
+            </form>
+        </div>
         <div class="col-md-10 col-md-offset-1">
             <table class="table" id="studentsInfoTable">
                 <caption class="text-center">学生信息管理</caption>
@@ -30,92 +57,295 @@
                 </tbody>
             </table>
         </div>
+        <!-- 模态框（Modal） -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title text-center" id="myModalLabel">学生信息编辑</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form role="form" id="studentInfoForm">
+                            <input type="hidden" name="_method" value="post" id="_method" />
+                            <div class="form-group" style="display: none">
+                                <label for="student_id">学生id</label>
+                                <input type="text" class="form-control" name="id" id="student_id">
+                            </div>
+                            <div class="form-group">
+                                <label for="student_name">学生姓名</label>
+                                <input type="text" class="form-control" name="studentName" id="student_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="student_number">学号</label>
+                                <input type="text" class="form-control" name="studentNumber" id="student_number">
+                            </div>
+                            <div class="form-group">
+                                <label >性别</label>
+                                <label for="radio1" class="radio-inline m-2"  >
+                                    <input type="radio" name="sex"  id="radio1" value="1" checked> 男
+                                </label>
+                                <label for="radio2" class="radio-inline m-2">
+                                    <input type="radio" name="sex" id="radio2" value="0"> 女
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label >班级 选择列表</label>
+                                <select class="form-control" id="class_id" name="classId" >
+                                    <option th:each="classInfoOne:${classInfos}" th:value="${classInfoOne.id}" th:text="${classInfoOne.className}"></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="student_password">学生登录密码</label>
+                                <input type="text" class="form-control" name="password" id="student_password">
+                            </div>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button type="submit" class="btn btn-primary" >提交更改</button>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
     </div>
 </body>
 <script th:inline="javascript">
+    
     var vue = new Vue({
         el:'#app',
-        data:{
-            
-        },
-        methods:{
-            
-        },
+        data:{},
+        methods:{},
         mounted:function () {
-            $('#studentsInfoTable').bootstrapTable({
-                url: '/students',                      //请求后台的URL（*）
-                method: 'get',                      //请求方式（*）
-                //toolbar: '#toolbar',              //工具按钮用哪个容器
-                striped: true,                      //是否显示行间隔色
-                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
-                pagination: true,                   //是否显示分页（*）
-                sortable: true,                     //是否启用排序
-                sortOrder: "asc",                   //排序方式
-                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
-                pageNumber: 1,                      //初始化加载第一页，默认第一页,并记录
-                //pageSize: rows,                     //每页的记录行数（*）
-                pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
-                search: false,                      //是否显示表格搜索
-                strictSearch: true,
-                showColumns: true,                  //是否显示所有的列（选择显示的列）
-                showRefresh: true,                  //是否显示刷新按钮
-                minimumCountColumns: 2,             //最少允许的列数
-                clickToSelect: true,                //是否启用点击选中行
-                //height: 500,                      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
-                uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
-                showToggle: true,                   //是否显示详细视图和列表视图的切换按钮
-                cardView: false,                    //是否显示详细视图
-                detailView: false,                  //是否显示父子表
-                //得到查询的参数
-                queryParams : function (params) {
-                    //这里的键的名字和控制器的变量名必须一致，这边改动，控制器也需要改成一样的
-                    var temp = {
-                        rows: params.limit,                         //页面大小
-                        page: (params.offset / params.limit) + 1,   //页码
-                        sort: params.sort,      //排序列名
-                        sortOrder: params.order //排位命令（desc，asc）
-                    };
-                    return temp;
-                },
-                columns: [
-                    {
-                        field:'id',
-                        title:'学生ID',
-                        sortable: true,
-                        visible: false
-                    },{
-                        field:'studentNumber',
-                        title:'学号'
-                    },
-                    {
-                        field:'studentName',
-                        title:'学生姓名'
-                    },
-                    {
-                        field:'sex',
-                        title:'性别'
-                    },
-                    {
-                        field:'classInfo.className',
-                        title:'班级'
-                    }
-                ],
-                onLoadSuccess: function () {
-                },
-                onLoadError: function () {
-                },
-                onDblClickRow: function (row, $element) {
-                    var id = row.ID;
-                    EditViewById(id, 'view');
-                },
-                responseHandler:function (res) {
-                    return{
-                        'total':res.total,
-                        'rows':res.list
-                    }
-                }
-            })
+
         }
+    })
+    
+    //阻止bootstrap表单回车自动提交
+    $(document).keypress(
+        function(event){
+            if (event.which == '13') {
+                event.preventDefault();
+            }
+        });
+
+    $(function () {
+        var queryBtn = $("#queryBtn");
+        queryBtn.click(function () {
+            $("#studentsInfoTable").bootstrapTable('refresh');
+        })
+
+        var resetQuery = $("#resetQuery");
+        resetQuery.click(function () {
+            $("#student_select_name").val('');
+            $("#class_select_id ").val('点击此处展开选项来选择班级');
+            $("#studentsInfoTable").bootstrapTable('refresh');
+        })
+        validate($('#studentInfoForm'));
+        $('#studentsInfoTable').bootstrapTable({
+            url: '/students',                      //请求后台的URL（*）
+            method: 'get',                      //请求方式（*）
+            //toolbar: '#toolbar',              //工具按钮用哪个容器
+            striped: true,                      //是否显示行间隔色
+            cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+            pagination: true,                   //是否显示分页（*）
+            sortable: true,                     //是否启用排序
+            sortOrder: "asc",                   //排序方式
+            sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+            pageNumber: 1,                      //初始化加载第一页，默认第一页,并记录
+            //pageSize: rows,                     //每页的记录行数（*）
+            pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+            search: false,                      //是否显示表格搜索
+            strictSearch: true,
+            showColumns: true,                  //是否显示所有的列（选择显示的列）
+            showRefresh: true,                  //是否显示刷新按钮
+            minimumCountColumns: 2,             //最少允许的列数
+            clickToSelect: true,                //是否启用点击选中行
+            //height: 500,                      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+            uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+            showToggle: true,                   //是否显示详细视图和列表视图的切换按钮
+            cardView: false,                    //是否显示详细视图
+            detailView: false,                  //是否显示父子表
+            //得到查询的参数
+            queryParams : function (params) {
+                //这里的键的名字和控制器的变量名必须一致，这边改动，控制器也需要改成一样的
+                var temp = {
+                    rows: params.limit,                         //页面大小
+                    page: (params.offset / params.limit) + 1,   //页码
+                    sort: params.sort,      //排序列名
+                    sortOrder: params.order, //排位命令（desc，asc）
+                    classId:$('#class_select_id').val(),
+                    studentName:$('#student_select_name').val()
+                };
+                return temp;
+            },
+            columns: [
+                {checkbox:true},
+                {
+                    field:'id',
+                    title:'学生ID',
+                    sortable: true,
+                    visible: false
+                },{
+                    field:'studentNumber',
+                    title:'学号'
+                },
+                {
+                    field:'studentName',
+                    title:'学生姓名'
+                },
+                {
+                    field:'sex',
+                    title:'性别',
+                    formatter:function (obj) {
+                        if(obj==1){
+                            return '男'
+                        }else {
+                            return '女'
+                        }
+                    }
+                },
+                {
+                    field:'classInfo.className',
+                    title:'班级'
+                }
+            ],
+            onLoadSuccess: function () {
+            },
+            onLoadError: function () {
+            },
+            onDblClickRow: function (row, $element) {
+
+            },
+            responseHandler:function (res) {
+                return{
+                    'total':res.total,
+                    'rows':res.list
+                }
+            }
+        });
+
+        var $editbtn = $("#edit_table_btn");
+        $editbtn.click(function () {
+            $("#_method").val("put");
+            var info = $('#studentsInfoTable').bootstrapTable('getSelections');
+            if(info.length==0){
+                alert("请选择数据");
+            }else if(info.length>1){
+                alert("请选择一条数据编辑");
+            }else{
+                $("#studentInfoForm").data('bootstrapValidator').destroy();
+                $('#studentInfoForm').data('bootstrapValidator', null);
+                validate($("#studentInfoForm"));
+                var studentInfo = info[0];
+                console.log(studentInfo)
+                $("#student_id").val(studentInfo.id)
+                $('#student_number').val(studentInfo.studentNumber);
+                $('#student_name').val(studentInfo.studentName)
+                $("input[name='sex'][value= " + studentInfo.sex +"]").attr('checked',true)
+                $('#class_id').val(studentInfo.classId)
+                $("#myModal").modal("show")
+            }
+        });
+
+        var $addbtn = $("#add_table_btn");
+        $addbtn.click(function () {
+            $("#studentInfoForm").data('bootstrapValidator').destroy();
+            $('#studentInfoForm').data('bootstrapValidator', null);
+            validate($("#studentInfoForm"));
+            $("#_method").val("post");
+            $('#studentInfoForm')[0].reset();
+            $("#myModal").modal("show")
+        });
+
+        var $deletebtn=$("#delete_table_btn");
+        $deletebtn.click(function () {
+            var info = $('#studentsInfoTable').bootstrapTable('getSelections');
+            if(info.length==0){
+                alert("请选择数据");
+            }else{
+                var ids = new Array();
+                for(ob of info){
+                    ids.push(ob.id);
+                }
+                $.ajax({
+                    type:'delete',
+                    url:'/studentInfo',
+                    data:JSON.stringify(ids),
+                    dataType:'json',
+                    contentType: "application/json;charset=utf-8",
+                    success:function (res) {
+                        if(res.status=='success'){
+                            alert(res.message);
+                            $("#myModal").modal("hide")
+                            $("#studentsInfoTable").bootstrapTable('refresh');
+                        }else{
+                            alert(res.message);
+                            $("#myModal").modal("hide")
+                        }
+                    }
+                })
+            }
+        })
     });
+
+    function validate(fm){
+       fm.bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields:{
+                studentName:{
+                    validators:{
+                        notEmpty:{
+                            message:"学生姓名不能为空"
+                        },
+                        stringLength:{
+                            min:2,
+                            max:4,
+                            message:"用户名长度只能在2到4位之间"
+                        },
+                        regexp: {
+                            regexp: /^[\u4E00-\u9FA5_\.]+$/,
+                            message: '只能输入汉字'
+                        }
+                    }
+                },
+                password:{
+                    validators:{
+                        notEmpty:{
+                            message:"密码不能为空"
+                        }
+                    }
+                }}}).on('success.form.bv', function (e) {
+           e.preventDefault();
+           var form = $(e.target);
+           var _method = $("#_method").val();
+           var paramArray = form.serializeArray();
+           var jsonObj={};
+           $(paramArray).each(function(){
+               jsonObj[this.name]=this.value;
+           });
+           $.ajax({
+               type:_method,
+               url:'/studentInfo',
+               data:JSON.stringify(jsonObj),
+               dataType:'json',
+               contentType: "application/json;charset=utf-8",
+               success:function (res) {
+                   if(res.status=='success'){
+                       alert(res.message);
+                       $("#myModal").modal("hide")
+                       $("#studentsInfoTable").bootstrapTable('refresh');
+                   }else{
+                       alert(res.message);
+                       $("#myModal").modal("hide")
+                   }
+               }
+           })
+       });
+    }
 </script>
 </html>

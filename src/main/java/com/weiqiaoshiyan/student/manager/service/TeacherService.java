@@ -85,14 +85,10 @@ public class TeacherService {
         return teacherMapper.insertTeacher(teacher)>0;
     }
 
-    public Object isOnlyAccount(Map<String,Object> conditions) {
+    public Integer isOnlyAccount(Map<String,Object> conditions) {
         Object teacherAccount = conditions.get("teacherAccount");
         conditions.clear();
         conditions.put("account",teacherAccount);
-            if (teacherMapper.selectTeachers(conditions).size()>0) {
-            return  false;
-        }else{
-            return  true;
-        }
+        return teacherMapper.selectTeachers(conditions).size();
     }
 }

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>个人信息修改</title>
+    <link th:href="@{/asserts/css/jquery.dataTables.css}" rel="stylesheet">
+    <link th:href="@{/asserts/css/bootstrapValidator.css}" rel="stylesheet">
+    <link th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/asserts/css/bootstrap-datetimepicker.css}" rel="stylesheet" />
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/3.4.1/js/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/moment.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/bootstrap-datetimepicker.js}" ></script>
+    <script type="text/javascript" charset="UTF-8" th:src="@{/asserts/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/bootstrapValidator.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/vue/2.6.10/vue.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/vue.resource.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/jquery.dataTables.js}"></script>
+</head>
+<body>
+<div class="col-md-12 form-group">
+    <div th:replace="~{teacher/nav::topnav(activeUrl='teacherInfo')}"></div>
+    <div class="col-md-4 col-md-offset-4">
+        <form role="form-horizontal" id="updateTeacherInfoForm" >
+            <input type="hidden" name="_method" value="put"  id="_method">
+            <div class="form-group" style="display: none">
+                <label>教师id</label>
+                <input type="text" class="form-control" th:value="${session.loginUser.id}" name="id" />
+            </div>
+            <div class="form-group">
+                <label for="teacher_account" class="text-center">帐号</label>
+                <input type="text" class="form-control" th:value="${session.loginUser.account}" id="teacher_account"  name="account" >
+            </div>
+            <div class="form-group">
+                <label for="teacher_name" class="text-center">真实名字</label>
+                <input type="text" class="form-control" th:value="${session.loginUser.name}" id ="teacher_name"  name="name" >
+            </div>
+            <div class="form-group">
+                <label for="teacher_password" class="text-center">密码</label>
+                <input type="password" class="form-control" id="teacher_password"  name="password" >
+            </div>
+            <div class="form-group">
+                <label for="teacher_configured_password" class="text-center">确认密码</label>
+                <input type="password" class="form-control" id="teacher_configured_password" name="teacherConfiguredPassword">
+            </div>
+            <div class="form-group text-center">
+            <button type="submit" id="submitInfo" class="form-group btn btn-primary">更新个人信息</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script th:inline="javascript">
+    $(function () {
+        validate($('#updateTeacherInfoForm'));
+    })
+   function validate(fm) {
+       fm.bootstrapValidator({
+           message:'这个值是无效的',
+           feedbackIcons: {
+               valid: 'glyphicon glyphicon-ok',
+               invalid: 'glyphicon glyphicon-remove',
+               validating: 'glyphicon glyphicon-refresh'
+           },
+           fields:{
+               account:{
+                   message: '这个值是无效的',
+                   validators:{
+                       notEmpty:{
+                           message:'请输入帐号名称'
+                       },
+                       stringLength: {
+                           min: 6,
+                           max: 30,
+                           message: '长度必须在6到30之间'
+                       },regexp: {
+                           regexp: /^[a-zA-Z0-9_\.]+$/,
+                           message: '必须是数字或字母'
+                       },remote: {
+                           type: 'POST',
+                           url: '/teacher/isOnlyAccount',
+                           data: {
+                               teacherAccount:[[${session.loginUser.account}]],
+                               id:[[${session.loginUser.id}]]
+                           },
+                           message: '该帐号已经被使用了,请更换一个继续完成注册',
+                           delay: 2000
+                       },different: {
+                           field: 'teacherPassword',
+                           message: '登录帐号和密码不能一样'
+                       }
+                   }
+               },
+               name:{
+                   message: '这个值是无效的',
+                   validators:{
+                       stringLength: {
+                           min: 2,
+                           max: 4,
+                           message: '必须输入2个到四个中文字符'
+                       },
+                       regexp: {
+                           regexp: /^[\u4E00-\u9FA5_\.]+$/,
+                           message: '只能输入汉字'
+                       }
+                   }
+
+               },
+               password:{
+                   validators:{
+                       identical: {
+                           field: 'teacherConfiguredPassword',
+                           message: '两次输入的密码不一致'
+                       }
+                   }
+               },
+               teacherConfiguredPassword:{
+                   validators:{
+                       identical: {
+                           field: 'password',
+                           message: '两次输入的密码不一致'
+                       }
+                   }
+               }
+
+           }
+       }).on('success.form.bv', function (e) {
+           e.preventDefault();
+           var form = $(e.target);
+           var _method = $("#_method").val();
+           var paramArray = form.serializeArray();
+           var jsonObj={};
+           $(paramArray).each(function(){
+               jsonObj[this.name]=this.value;
+           });
+           $.ajax({
+               type:_method,
+               url:'/teacher/teacherInfo',
+               data:JSON.stringify(jsonObj),
+               dataType:'json',
+               contentType: "application/json;charset=utf-8",
+               success:function (res) {
+                   if(res.status=='success'){
+                       alert(res.message);
+                       $("#myModal").modal("hide")
+                   }else{
+                       alert(res.message);
+                       $("#myModal").modal("hide")
+                   }
+               }
+           })
+       });;
+   }
+</script>
+</html>

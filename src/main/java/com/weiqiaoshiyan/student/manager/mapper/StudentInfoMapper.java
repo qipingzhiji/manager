@@ -18,12 +18,12 @@ public interface StudentInfoMapper {
     @Insert("insert into student_info(student_number,student_name,password,class_id,create_time,sex,salt) values(#{studentNumber},#{studentName},#{password},#{classId},#{createTime},#{sex},#{salt})")
     int insert(StudentInfo studentInfo);
     @Delete("<script>" +
-            "delte from student_info where id in" +
+            "delete from student_info where id in" +
             "<foreach collection='ids' item='id' open='(' close=')' separator=','>" +
             "#{id}" +
             "</foreach>" +
             "</script>")
-    int delete(@Param("id") Integer[] ids);
+    int delete(@Param("ids") Integer[] ids);
 
     @Update("<script>" +
             "update student_info" +
@@ -38,7 +38,7 @@ public interface StudentInfoMapper {
             "student_name = #{studentName}," +
             "</if>" +
             "<if test='classId != null'>" +
-            "class_info = #{classId}," +
+            "class_id = #{classId}," +
             "</if>" +
             "<if test='password !=null'>" +
             "password=#{password}," +
@@ -113,4 +113,7 @@ public interface StudentInfoMapper {
      private Date createTime;
      private ClassInfo classInfo;
      */
+
+    @Select("select * from student_info where id = #{id}")
+    StudentInfo listById(Integer id);
 }
