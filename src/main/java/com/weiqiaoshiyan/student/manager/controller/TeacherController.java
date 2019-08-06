@@ -13,6 +13,11 @@ public class TeacherController {
     @Autowired
     private TeacherService teacherService;
 
+   /* public Object loginDetail(){
+        return  ""
+    }*/
+
+
     @RequestMapping("/teacher")
     public Object insertTeacher(Teacher teacher) {
         teacher.setName("admin");
