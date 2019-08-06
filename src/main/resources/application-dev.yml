@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+
 #数据库配置参数
 spring:
   datasource:
@@ -40,6 +41,7 @@ mybatis:
 logging:
   level:
     com.weiqiaoshiyan.student.manager.mapper: debug
+  file: E:/manager/manager.log #指定日志的存储位置
 pagehelper:
   helper-dialect: sqlite
   reasonable: true #分页合理化参数，默认值为false。当该参数设置为 true 时，pageNum<=0 时会查询第一页，
