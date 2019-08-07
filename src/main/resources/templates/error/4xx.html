@@ -1,10 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>错误页面</title>
+    <link th:href="@{/asserts/css/jquery.dataTables.css}" rel="stylesheet">
+    <link th:href="@{/asserts/css/bootstrapValidator.css}" rel="stylesheet">
+    <link th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/asserts/css/bootstrap-table.min.css}" rel="stylesheet">
+    <script type="text/javascript" th:src="@{/webjars/jquery/3.4.1/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/3.4.1/js/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/bootstrapValidator.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/bootstrap-table.min.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/bootstrap-table-zh-CN.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/vue/2.6.10/vue.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/vue.resource.js}"></script>
+    <script type="text/javascript" th:src="@{/asserts/js/jquery.dataTables.js}"></script>
 </head>
 <body>
-<h1>发生系统内部错误</h1>
+<div th:replace="~{teacher/nav::topnav(activeUrl='error')}" ></div>
+<h1>客户端发生错误</h1>
 </body>
 </html>
